@@ -17,6 +17,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    buildTypes.each {
+        // Add actual key in gradle.properties (TMDB_API_KEY="XXXX")
+        it.buildConfigField "String", "TMDB_API_KEY", TMDB_API_KEY
+    }
 }
 
 dependencies {
