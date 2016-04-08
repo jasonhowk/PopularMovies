@@ -9,9 +9,15 @@
                 tools:context="com.directv.jhowk.popularmovies.PopularMoviesActivityFragment"
                 tools:showIn="@layout/activity_popular_movies">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"/>
+    <GridView
+        android:id="@+id/gridview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorAccent"
+        android:horizontalSpacing="0dp"
+        android:numColumns="auto_fit"
+        android:stretchMode="columnWidth"
+        android:verticalSpacing="0dp"
+        />
 
 </RelativeLayout>
