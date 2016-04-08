@@ -28,8 +28,8 @@ public class TMDBImageLoader extends AsyncTaskLoader {
         Collection<PopularMovie> result = null;
 
         try {
-            TMDBService tmdbSservice = TMDBService.get(getContext().getApplicationContext(), BuildConfig.TMDB_API_KEY);
-            result = tmdbSservice.getMoviesMostPopular();
+            TMDBService tmdbService = TMDBService.get(getContext().getApplicationContext(), BuildConfig.TMDB_API_KEY);
+            result = tmdbService.getMoviesMostPopular();
         } catch (Exception e) {
             e.printStackTrace();
         }
