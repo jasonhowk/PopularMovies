@@ -10,6 +10,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridView;
 
+import com.directv.jhowk.popularmovies.adapter.TMDBImageAdapter;
+import com.directv.jhowk.popularmovies.loader.TMDBImageLoader;
+
+import java.util.ArrayList;
+
 /**
  * A placeholder fragment containing a simple view.
  */
@@ -58,6 +63,7 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
         Log.d(LOG_TAG, "onLoadFinished: MAX POSTERS:" + maxPosters);
 
         gridView.setNumColumns((int) maxPosters);
+        gridView.setAdapter(new TMDBImageAdapter(getContext(),(ArrayList)data));
     }
 
     @Override
@@ -71,7 +77,7 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
         switch (id) {
             case IMAGE_LOADER_ID:
                 Log.d(LOG_TAG, "onCreateLoader: Start image loader...");
-                return null;
+                return new TMDBImageLoader(getActivity().getApplicationContext());
         }
         return null;
     }
