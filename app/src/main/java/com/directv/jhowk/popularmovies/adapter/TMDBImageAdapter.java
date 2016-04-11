@@ -11,6 +11,8 @@ import android.widget.ImageView;
 
 import com.directv.jhowk.popularmovies.R;
 import com.directv.jhowk.popularmovies.model.PopularMovie;
+import com.directv.jhowk.popularmovies.service.TMDBService;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -58,8 +60,13 @@ public class TMDBImageAdapter extends BaseAdapter {
             // Image view.
             imageView = (ImageView)posterGridItem.findViewById(R.id.posterImageView);
             imageView.setBackgroundColor(Color.GRAY);
-            //imageView.setImageResource(R.drawable.test_image);
-
+            try {
+                String imageURL = String.format("%s%s",TMDBService.getImagesBaseURL(),getItem(position).getPosterPath());
+                Log.d(LOG_TAG, "getView: Image URL:" + imageURL);
+                Picasso.with(mContext).load(imageURL).into(imageView);
+            } catch (Exception e) {
+                Log.e(LOG_TAG, "getView: Error loading image.",e);
+            }
         } else {
             posterGridItem = convertView;
         }

@@ -28,6 +28,7 @@ public class TMDBService {
 
     // API Constants.
     private static final String BASE_URL = "http://api.themoviedb.org/3"; // Will be replaced with call to configuration.
+    private static final String BASE_IMAGE_URL = "http://image.tmdb.org/t/p/w500"; // Will be replaced with call to configuration.
     private static final String API_KEY = "api_key";
     private static final String CONFIGURATION_URL = "configuration";
     private static final String POPULAR_URL = "movie/popular";
@@ -88,6 +89,14 @@ public class TMDBService {
     public String getMoviesTopRated() {
         Log.d(LOG_TAG,"Calling /movie/top_rated");
         return getURL(TOP_RATED_URL);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // PUBLIC
+    ///////////////////////////////////////////////////////////////////////////
+
+    public static String getImagesBaseURL() {
+        return BASE_IMAGE_URL;
     }
 
     ///////////////////////////////////////////////////////////////////////////
