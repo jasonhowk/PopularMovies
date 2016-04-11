@@ -25,10 +25,14 @@ public class TMDBImageAdapter extends BaseAdapter {
 
     private Context mContext;
     private ArrayList<PopularMovie> mMovies;
+    private Picasso mPicasso;
 
     public TMDBImageAdapter(Context c, ArrayList<PopularMovie> movies) {
         mContext = c;
         mMovies = movies;
+        mPicasso = Picasso.with(mContext);
+        //mPicasso.setIndicatorsEnabled(true);
+        //mPicasso.setLoggingEnabled(true);
     }
 
     @Override
@@ -54,21 +58,21 @@ public class TMDBImageAdapter extends BaseAdapter {
         LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         if (convertView == null) {
-            Log.d(LOG_TAG, "getView: Creating view.");
+            //Log.d(LOG_TAG, "getView: Creating view.");
             posterGridItem = inflater.inflate(R.layout.poster_grid_item,null);
-
-            // Image view.
-            imageView = (ImageView)posterGridItem.findViewById(R.id.posterImageView);
-            imageView.setBackgroundColor(Color.GRAY);
-            try {
-                String imageURL = String.format("%s%s",TMDBService.getImagesBaseURL(),getItem(position).getPosterPath());
-                Log.d(LOG_TAG, "getView: Image URL:" + imageURL);
-                Picasso.with(mContext).load(imageURL).into(imageView);
-            } catch (Exception e) {
-                Log.e(LOG_TAG, "getView: Error loading image.",e);
-            }
         } else {
             posterGridItem = convertView;
+        }
+
+        // Image view.
+        imageView = (ImageView)posterGridItem.findViewById(R.id.posterImageView);
+        imageView.setBackgroundColor(Color.GRAY);
+        try {
+            String imageURL = String.format("%s%s", TMDBService.getImagesBaseURL(),getItem(position).getPosterPath());
+            //Log.d(LOG_TAG, "getView: Image URL:" + imageURL);
+            mPicasso.load(imageURL).into(imageView);
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "getView: Error loading image.",e);
         }
 
         return posterGridItem;

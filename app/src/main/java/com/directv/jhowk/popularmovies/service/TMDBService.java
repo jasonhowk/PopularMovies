@@ -161,7 +161,7 @@ public class TMDBService {
         JSONObject jsonObject = new JSONObject(jsonString);
         JSONArray jsonArray = jsonObject.getJSONArray("results");
         if (jsonArray.length() > 0) {
-            for (int i = 0; i < jsonArray.length() - 1; i++) {
+            for (int i = 0; i < jsonArray.length(); i++) {
                 popularMovies.add(new PopularMovie(jsonArray.getJSONObject(i)));
             }
         }
