@@ -3,10 +3,20 @@ package com.directv.jhowk.popularmovies;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 
-public class PopularMoviesActivity extends AppCompatActivity {
+
+public class PopularMoviesActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+    private static final String LOG_TAG = PopularMoviesActivity.class.getSimpleName();
+
+    private static final String[] sections = {"Popular Movies","Top Rated"};
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -14,6 +24,13 @@ public class PopularMoviesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_popular_movies);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+
+        Spinner spinner = (Spinner)findViewById(R.id.nav_spinner);
+        spinner.setOnItemSelectedListener(this);
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this,R.layout.nav_spinner_item, sections);
+        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(arrayAdapter);
     }
 
     @Override
@@ -36,5 +53,19 @@ public class PopularMoviesActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Spinner Callbacks
+    ///////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        Log.d(LOG_TAG, "onItemSelected.");
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+        Log.d(LOG_TAG, "onNothingSelected.");
     }
 }
