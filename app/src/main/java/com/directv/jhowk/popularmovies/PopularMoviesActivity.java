@@ -1,5 +1,6 @@
 package com.directv.jhowk.popularmovies;
 
+import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -15,9 +16,6 @@ import android.widget.Spinner;
 public class PopularMoviesActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
     private static final String LOG_TAG = PopularMoviesActivity.class.getSimpleName();
 
-    private static final String[] sections = {"Popular Movies","Top Rated"};
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,9 +24,10 @@ public class PopularMoviesActivity extends AppCompatActivity implements AdapterV
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
+        // Section spinner.
         Spinner spinner = (Spinner)findViewById(R.id.nav_spinner);
         spinner.setOnItemSelectedListener(this);
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this,R.layout.nav_spinner_item, sections);
+        ArrayAdapter<CharSequence> arrayAdapter = ArrayAdapter.createFromResource(this,R.array.sections_rid,R.layout.nav_spinner_item);
         arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(arrayAdapter);
     }
@@ -61,7 +60,18 @@ public class PopularMoviesActivity extends AppCompatActivity implements AdapterV
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        Log.d(LOG_TAG, "onItemSelected.");
+        TypedArray ta = getResources().obtainTypedArray(R.array.sections_rid);
+        int resId = ta.getResourceId(position,-1);
+        Log.d(LOG_TAG, "onItemSelected: selected resid:" + resId);
+        switch (resId) {
+            case R.string.popular:
+                Log.d(LOG_TAG, "onItemSelected: Popular selected.");
+                break;
+            case R.string.topRated:
+                Log.d(LOG_TAG, "onItemSelected: Top Rated selected.");
+                break;
+        }
+
     }
 
     @Override

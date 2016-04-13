@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="popular">Popular Movies</string>
+    <string name="topRated">Top Rated</string>
+
+    <array name="sections_rid">
+        <item>@string/popular</item>
+        <item>@string/topRated</item>
+    </array>
+</resources>
