@@ -8,12 +8,12 @@ import com.directv.jhowk.popularmovies.BuildConfig;
 import com.directv.jhowk.popularmovies.model.PopularMovie;
 import com.directv.jhowk.popularmovies.service.TMDBService;
 
-import java.util.Collection;
+import java.util.ArrayList;
 
 /**
  * Created by Jason Howk.
  */
-public class TMDBImageLoader extends AsyncTaskLoader {
+public class TMDBImageLoader extends AsyncTaskLoader<ArrayList<PopularMovie>> {
     private static final String LOG_TAG = TMDBImageLoader.class.getSimpleName();
 
 
@@ -23,9 +23,9 @@ public class TMDBImageLoader extends AsyncTaskLoader {
     }
 
     @Override
-    public Collection<PopularMovie> loadInBackground() {
+    public ArrayList<PopularMovie> loadInBackground() {
         Log.d(LOG_TAG, "loadInBackground: Attempting to load the popular results.");
-        Collection<PopularMovie> result = null;
+        ArrayList<PopularMovie> result = null;
 
         try {
             TMDBService tmdbService = TMDBService.get(getContext().getApplicationContext(), BuildConfig.TMDB_API_KEY);
@@ -48,7 +48,7 @@ public class TMDBImageLoader extends AsyncTaskLoader {
     }
 
     @Override
-    public void deliverResult(Object data) {
+    public void deliverResult(ArrayList<PopularMovie> data) {
         super.deliverResult(data);
         Log.d(LOG_TAG, "deliverResult: Delivering results...");
     }

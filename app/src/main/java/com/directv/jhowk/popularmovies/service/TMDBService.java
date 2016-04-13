@@ -16,7 +16,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 
 /**
  * TMDB.org (http://themoviedb.org) Service Interface.
@@ -35,8 +34,8 @@ public class TMDBService {
     private static final String TOP_RATED_URL = "movie/top_rated";
 
     private static TMDBService sTMDBService;
-    private Context mContext;
-    private String mApiKey;
+    private final Context mContext;
+    private final String mApiKey;
 
     
     private TMDBService(Context context, String apiKey) {
@@ -52,7 +51,7 @@ public class TMDBService {
      * @return The operational data store configured with context and api key.
      * @throws Exception
      */
-    public static TMDBService get(Context context, String apiKey) throws Exception {
+    public static TMDBService get(Context context, @SuppressWarnings("SameParameterValue") String apiKey) throws Exception {
         if (sTMDBService == null) {
             if (context != null && apiKey != null) {
                 sTMDBService = new TMDBService(context.getApplicationContext(), apiKey);
@@ -74,7 +73,7 @@ public class TMDBService {
      * http://api.themoviedb.org/3/movie/popular?api_key=xxxx
      * @return Collection of PopularMovie
      */
-    public Collection<PopularMovie> getMoviesMostPopular() throws Exception {
+    public ArrayList<PopularMovie> getMoviesMostPopular() throws Exception {
         Log.d(LOG_TAG, "getMoviesMostPopular: Calling /movie/popular");
         return parsePopular(getURL(POPULAR_URL));
     }
@@ -120,7 +119,7 @@ public class TMDBService {
             urlConnection.connect();
 
             InputStream inputStream = urlConnection.getInputStream();
-            StringBuffer buffer = new StringBuffer();
+            StringBuilder builder = new StringBuilder();
             if (inputStream == null) {
                 return null;
             }
@@ -128,15 +127,15 @@ public class TMDBService {
 
             String line;
             while ((line = reader.readLine()) != null) {
-                buffer.append(line + "\n");
+                builder.append(line).append("\n");
             }
 
-            if (buffer.length() == 0) {
+            if (builder.length() == 0) {
                 // Empty string.
                 return null;
             }
 
-            sResult = buffer.toString();
+            sResult = builder.toString();
         } catch (IOException ioe) {
             ioe.printStackTrace();
         } finally {

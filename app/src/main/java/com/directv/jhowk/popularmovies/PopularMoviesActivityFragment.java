@@ -16,22 +16,20 @@ import android.widget.Toast;
 
 import com.directv.jhowk.popularmovies.adapter.TMDBImageAdapter;
 import com.directv.jhowk.popularmovies.loader.TMDBImageLoader;
+import com.directv.jhowk.popularmovies.model.PopularMovie;
 
 import java.util.ArrayList;
 
 /**
  * A placeholder fragment containing a simple view.
  */
-public class PopularMoviesActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks {
+public class PopularMoviesActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<ArrayList<PopularMovie>> {
     private static final String LOG_TAG = PopularMoviesActivityFragment.class.getSimpleName();
 
     private static final int IMAGE_LOADER_ID = 1;
     private static final int POSTER_WIDTH = 500;
 
     private GridView mGridView;
-
-    public PopularMoviesActivityFragment() {
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -71,7 +69,7 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
     ///////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void onLoadFinished(android.support.v4.content.Loader loader, Object data) {
+    public void onLoadFinished(Loader<ArrayList<PopularMovie>> loader, ArrayList<PopularMovie> data) {
         Log.d(LOG_TAG, "onLoadFinished: Got on load finished.");
         if (data != null) {
             Log.d(LOG_TAG, "onLoadFinished: LOADER DATA: " + data.toString());
@@ -87,12 +85,13 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
              * just calculate the number of columns manually.  Columns were chosen as
              * to attempt to maintain the relative poster size
              */
-            Log.d(LOG_TAG, "onLoadFinished: WIDTH: " + getView().getWidth());
-            double maxPosters = Math.floor(getView().getWidth() / POSTER_WIDTH);
-            Log.d(LOG_TAG, "onLoadFinished: MAX POSTERS:" + maxPosters);
-
-            mGridView.setNumColumns((int) maxPosters);
-            mGridView.setAdapter(new TMDBImageAdapter(getContext(), (ArrayList) data));
+            if (getView() != null) {
+                Log.d(LOG_TAG, "onLoadFinished: WIDTH: " + getView().getWidth());
+                double maxPosters = Math.floor(getView().getWidth() / POSTER_WIDTH);
+                Log.d(LOG_TAG, "onLoadFinished: MAX POSTERS:" + maxPosters);
+                mGridView.setNumColumns((int) maxPosters);
+            }
+            mGridView.setAdapter(new TMDBImageAdapter(getContext(),data));
         } else {
             Toast.makeText(getContext(),"Unable to download data.  Please try again.",Toast.LENGTH_SHORT).show();
         }
@@ -104,7 +103,7 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
     }
 
     @Override
-    public Loader onCreateLoader(int id, Bundle args) {
+    public Loader<ArrayList<PopularMovie>> onCreateLoader(int id, Bundle args) {
         Log.d(LOG_TAG, "onCreateLoader: Got on create loader.");
         switch (id) {
             case IMAGE_LOADER_ID:

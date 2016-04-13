@@ -23,9 +23,9 @@ import java.util.ArrayList;
 public class TMDBImageAdapter extends BaseAdapter {
     private static final String LOG_TAG = TMDBImageAdapter.class.getSimpleName();
 
-    private Context mContext;
-    private ArrayList<PopularMovie> mMovies;
-    private Picasso mPicasso;
+    private final Context mContext;
+    private final ArrayList<PopularMovie> mMovies;
+    private final Picasso mPicasso;
 
     public TMDBImageAdapter(Context c, ArrayList<PopularMovie> movies) {
         mContext = c;
@@ -59,7 +59,7 @@ public class TMDBImageAdapter extends BaseAdapter {
 
         if (convertView == null) {
             //Log.d(LOG_TAG, "getView: Creating view.");
-            posterGridItem = inflater.inflate(R.layout.poster_grid_item,null);
+            posterGridItem = inflater.inflate(R.layout.poster_grid_item,parent,false);
         } else {
             posterGridItem = convertView;
         }

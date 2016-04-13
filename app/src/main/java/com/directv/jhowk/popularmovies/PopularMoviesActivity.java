@@ -15,6 +15,7 @@ import android.widget.Spinner;
 
 public class PopularMoviesActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
     private static final String LOG_TAG = PopularMoviesActivity.class.getSimpleName();
+    private TypedArray mSectionsArray;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,14 +23,24 @@ public class PopularMoviesActivity extends AppCompatActivity implements AdapterV
         setContentView(R.layout.activity_popular_movies);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        // Supressing inspection as we're explicitly setting above.
+        //noinspection ConstantConditions
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         // Section spinner.
+        mSectionsArray = getResources().obtainTypedArray(R.array.sections_rid);
         Spinner spinner = (Spinner)findViewById(R.id.nav_spinner);
+        assert spinner != null;
         spinner.setOnItemSelectedListener(this);
         ArrayAdapter<CharSequence> arrayAdapter = ArrayAdapter.createFromResource(this,R.array.sections_rid,R.layout.nav_spinner_item);
         arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(arrayAdapter);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mSectionsArray.recycle();
     }
 
     @Override
@@ -60,8 +71,7 @@ public class PopularMoviesActivity extends AppCompatActivity implements AdapterV
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        TypedArray ta = getResources().obtainTypedArray(R.array.sections_rid);
-        int resId = ta.getResourceId(position,-1);
+        int resId = mSectionsArray.getResourceId(position,-1);
         Log.d(LOG_TAG, "onItemSelected: selected resid:" + resId);
         switch (resId) {
             case R.string.popular:
@@ -71,7 +81,6 @@ public class PopularMoviesActivity extends AppCompatActivity implements AdapterV
                 Log.d(LOG_TAG, "onItemSelected: Top Rated selected.");
                 break;
         }
-
     }
 
     @Override

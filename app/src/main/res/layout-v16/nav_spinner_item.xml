@@ -6,4 +6,5 @@
     android:gravity="start"
     android:textColor="#ffffff"
     android:textStyle="normal"
+    android:fontFamily="sans-serif-medium"
     android:textSize="20sp"/>
