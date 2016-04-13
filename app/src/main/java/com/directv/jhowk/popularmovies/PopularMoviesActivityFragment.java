@@ -1,7 +1,8 @@
 package com.directv.jhowk.popularmovies;
 
+import android.content.res.TypedArray;
 import android.os.Bundle;
-import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -11,48 +12,54 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.GridView;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.directv.jhowk.popularmovies.adapter.TMDBImageAdapter;
-import com.directv.jhowk.popularmovies.loader.TMDBImageLoader;
-import com.directv.jhowk.popularmovies.model.PopularMovie;
+import com.directv.jhowk.popularmovies.loader.TMDBPopularLoader;
+import com.directv.jhowk.popularmovies.loader.TMDBTopRatedLoader;
+import com.directv.jhowk.popularmovies.model.TMDBContentItem;
 
 import java.util.ArrayList;
 
 /**
  * A placeholder fragment containing a simple view.
  */
-public class PopularMoviesActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<ArrayList<PopularMovie>> {
+public class PopularMoviesActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<ArrayList<TMDBContentItem>>
+        ,AdapterView.OnItemSelectedListener {
     private static final String LOG_TAG = PopularMoviesActivityFragment.class.getSimpleName();
 
-    private static final int IMAGE_LOADER_ID = 1;
+    private static final int MOVIE_POPULAR_LOADER_ID = 1;
+    private static final int MOVIE_TOP_RATED_LOADER_ID = 2;
+
     private static final int POSTER_WIDTH = 500;
 
+    private SwipeRefreshLayout mSwipeRefreshLayout;
     private GridView mGridView;
+    private Spinner mSpinner;
+    private TypedArray mSectionsArray;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View fragment = inflater.inflate(R.layout.fragment_popular_movies, container, false);
 
-        getLoaderManager().initLoader(IMAGE_LOADER_ID, null, this);//.forceLoad();
+        getLoaderManager().initLoader(MOVIE_POPULAR_LOADER_ID, null, this);//.forceLoad();
 
-        final SwipeRefreshLayout swipeLayout = (SwipeRefreshLayout)fragment.findViewById(R.id.swipeLayout);
-        swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+        // Swipe Refresh
+        mSwipeRefreshLayout = (SwipeRefreshLayout)fragment.findViewById(R.id.swipeLayout);
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                Toast.makeText(getContext(),"Refreshing list...", Toast.LENGTH_SHORT).show();
-                // TEMP: Just wait 3sec and dismiss.
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        swipeLayout.setRefreshing(false);
-                    }
-                },3000);
+                Log.d(LOG_TAG, "onRefresh: Refreshing data.");
+                refresh();
             }
         });
 
+        // GridView
         mGridView = (GridView)fragment.findViewById(R.id.gridview);
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -64,19 +71,47 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
         return fragment;
     }
 
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        // Spinner
+        mSectionsArray = getResources().obtainTypedArray(R.array.sections_rid);
+        mSpinner = (Spinner)getActivity().findViewById(R.id.nav_spinner);
+        ArrayAdapter<CharSequence> arrayAdapter = ArrayAdapter.createFromResource(getContext(),R.array.sections_rid,R.layout.nav_spinner_item);
+        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mSpinner.setAdapter(arrayAdapter);
+        mSpinner.setOnItemSelectedListener(this);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mSectionsArray.recycle();
+    }
+
+    private void refresh() {
+        Log.d(LOG_TAG, "refresh: Restarting loader...");
+        getLoaderManager().restartLoader(MOVIE_POPULAR_LOADER_ID, null, this);
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // LoaderCallbacks
     ///////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void onLoadFinished(Loader<ArrayList<PopularMovie>> loader, ArrayList<PopularMovie> data) {
+    public void onLoadFinished(Loader<ArrayList<TMDBContentItem>> loader, ArrayList<TMDBContentItem> data) {
         Log.d(LOG_TAG, "onLoadFinished: Got on load finished.");
         if (data != null) {
             Log.d(LOG_TAG, "onLoadFinished: LOADER DATA: " + data.toString());
+            Log.d(LOG_TAG, "onLoadFinished: Loader finished... ");
             switch (loader.getId()) {
-                case IMAGE_LOADER_ID:
-                    Log.d(LOG_TAG, "onLoadFinished: Loader finished... ");
-                    getLoaderManager().destroyLoader(IMAGE_LOADER_ID);
+                case MOVIE_POPULAR_LOADER_ID:
+                    getLoaderManager().destroyLoader(MOVIE_POPULAR_LOADER_ID);
+                    break;
+                case MOVIE_TOP_RATED_LOADER_ID:
+                    getLoaderManager().destroyLoader(MOVIE_TOP_RATED_LOADER_ID);
+                    break;
             }
 
             /**
@@ -95,6 +130,7 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
         } else {
             Toast.makeText(getContext(),"Unable to download data.  Please try again.",Toast.LENGTH_SHORT).show();
         }
+        mSwipeRefreshLayout.setRefreshing(false);
     }
 
     @Override
@@ -103,13 +139,39 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
     }
 
     @Override
-    public Loader<ArrayList<PopularMovie>> onCreateLoader(int id, Bundle args) {
+    public Loader<ArrayList<TMDBContentItem>> onCreateLoader(int id, Bundle args) {
         Log.d(LOG_TAG, "onCreateLoader: Got on create loader.");
         switch (id) {
-            case IMAGE_LOADER_ID:
-                Log.d(LOG_TAG, "onCreateLoader: Start image loader...");
-                return new TMDBImageLoader(getActivity().getApplicationContext());
+            case MOVIE_POPULAR_LOADER_ID:
+                Log.d(LOG_TAG, "onCreateLoader: Start popular loader...");
+                return new TMDBPopularLoader(getActivity().getApplicationContext());
+            case MOVIE_TOP_RATED_LOADER_ID:
+                Log.d(LOG_TAG, "onCreateLoader: Start top rated loader...");
+                return new TMDBTopRatedLoader(getActivity().getApplicationContext());
         }
         return null;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    //
+    ///////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        int resId = mSectionsArray.getResourceId(position,-1);
+        Log.d(LOG_TAG, "onItemSelected: selected resid:" + resId);
+        switch (resId) {
+            case R.string.popular:
+                Log.d(LOG_TAG, "onItemSelected: Popular selected.");
+                break;
+            case R.string.topRated:
+                Log.d(LOG_TAG, "onItemSelected: Top Rated selected.");
+                break;
+        }
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+        Log.d(LOG_TAG, "onNothingSelected.");
     }
 }

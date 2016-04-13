@@ -1,21 +1,14 @@
 package com.directv.jhowk.popularmovies;
 
-import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Spinner;
 
 
-public class PopularMoviesActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+public class PopularMoviesActivity extends AppCompatActivity {
     private static final String LOG_TAG = PopularMoviesActivity.class.getSimpleName();
-    private TypedArray mSectionsArray;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,21 +19,6 @@ public class PopularMoviesActivity extends AppCompatActivity implements AdapterV
         // Supressing inspection as we're explicitly setting above.
         //noinspection ConstantConditions
         getSupportActionBar().setDisplayShowTitleEnabled(false);
-
-        // Section spinner.
-        mSectionsArray = getResources().obtainTypedArray(R.array.sections_rid);
-        Spinner spinner = (Spinner)findViewById(R.id.nav_spinner);
-        assert spinner != null;
-        spinner.setOnItemSelectedListener(this);
-        ArrayAdapter<CharSequence> arrayAdapter = ArrayAdapter.createFromResource(this,R.array.sections_rid,R.layout.nav_spinner_item);
-        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(arrayAdapter);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        mSectionsArray.recycle();
     }
 
     @Override
@@ -63,28 +41,5 @@ public class PopularMoviesActivity extends AppCompatActivity implements AdapterV
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Spinner Callbacks
-    ///////////////////////////////////////////////////////////////////////////
-
-    @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        int resId = mSectionsArray.getResourceId(position,-1);
-        Log.d(LOG_TAG, "onItemSelected: selected resid:" + resId);
-        switch (resId) {
-            case R.string.popular:
-                Log.d(LOG_TAG, "onItemSelected: Popular selected.");
-                break;
-            case R.string.topRated:
-                Log.d(LOG_TAG, "onItemSelected: Top Rated selected.");
-                break;
-        }
-    }
-
-    @Override
-    public void onNothingSelected(AdapterView<?> parent) {
-        Log.d(LOG_TAG, "onNothingSelected.");
     }
 }

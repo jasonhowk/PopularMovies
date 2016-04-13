@@ -10,7 +10,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 
 import com.directv.jhowk.popularmovies.R;
-import com.directv.jhowk.popularmovies.model.PopularMovie;
+import com.directv.jhowk.popularmovies.model.TMDBContentItem;
 import com.directv.jhowk.popularmovies.service.TMDBService;
 import com.squareup.picasso.Picasso;
 
@@ -24,12 +24,12 @@ public class TMDBImageAdapter extends BaseAdapter {
     private static final String LOG_TAG = TMDBImageAdapter.class.getSimpleName();
 
     private final Context mContext;
-    private final ArrayList<PopularMovie> mMovies;
+    private final ArrayList<TMDBContentItem> mContentItems;
     private final Picasso mPicasso;
 
-    public TMDBImageAdapter(Context c, ArrayList<PopularMovie> movies) {
+    public TMDBImageAdapter(Context c, ArrayList<TMDBContentItem> contentItems) {
         mContext = c;
-        mMovies = movies;
+        mContentItems = contentItems;
         mPicasso = Picasso.with(mContext);
         //mPicasso.setIndicatorsEnabled(true);
         //mPicasso.setLoggingEnabled(true);
@@ -37,12 +37,12 @@ public class TMDBImageAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        return mMovies.size();
+        return mContentItems.size();
     }
 
     @Override
-    public PopularMovie getItem(int position) {
-        return mMovies.get(position);
+    public TMDBContentItem getItem(int position) {
+        return mContentItems.get(position);
     }
 
     @Override

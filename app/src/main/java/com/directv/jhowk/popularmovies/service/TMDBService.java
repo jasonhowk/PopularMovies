@@ -3,7 +3,7 @@ package com.directv.jhowk.popularmovies.service;
 import android.content.Context;
 import android.util.Log;
 
-import com.directv.jhowk.popularmovies.model.PopularMovie;
+import com.directv.jhowk.popularmovies.model.TMDBContentItem;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -73,9 +73,9 @@ public class TMDBService {
      * http://api.themoviedb.org/3/movie/popular?api_key=xxxx
      * @return Collection of PopularMovie
      */
-    public ArrayList<PopularMovie> getMoviesMostPopular() throws Exception {
+    public ArrayList<TMDBContentItem> getMoviesMostPopular() throws Exception {
         Log.d(LOG_TAG, "getMoviesMostPopular: Calling /movie/popular");
-        return parsePopular(getURL(POPULAR_URL));
+        return parseResult(getURL(POPULAR_URL));
     }
 
     /***
@@ -85,9 +85,9 @@ public class TMDBService {
      * http://api.themoviedb.org/3/movie/top_rated?api_key=xxxx
      * @return String JSON result string (for now.)
      */
-    public String getMoviesTopRated() {
+    public ArrayList<TMDBContentItem> getMoviesTopRated() throws Exception{
         Log.d(LOG_TAG,"Calling /movie/top_rated");
-        return getURL(TOP_RATED_URL);
+        return parseResult(getURL(TOP_RATED_URL));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -153,17 +153,17 @@ public class TMDBService {
         return sResult;
     }
 
-    private ArrayList<PopularMovie> parsePopular(String jsonString) throws JSONException {
+    private ArrayList<TMDBContentItem> parseResult(String jsonString) throws JSONException {
         Log.d(LOG_TAG, "parsePopular: Parsing most popular response.");
-        ArrayList<PopularMovie> popularMovies = new ArrayList<>();
+        ArrayList<TMDBContentItem> tmdbContentItems = new ArrayList<>();
         // Parse Data.
         JSONObject jsonObject = new JSONObject(jsonString);
         JSONArray jsonArray = jsonObject.getJSONArray("results");
         if (jsonArray.length() > 0) {
             for (int i = 0; i < jsonArray.length(); i++) {
-                popularMovies.add(new PopularMovie(jsonArray.getJSONObject(i)));
+                tmdbContentItems.add(new TMDBContentItem(jsonArray.getJSONObject(i)));
             }
         }
-        return popularMovies;
+        return tmdbContentItems;
     }
 }
