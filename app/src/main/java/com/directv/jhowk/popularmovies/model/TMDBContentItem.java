@@ -1,5 +1,8 @@
 package com.directv.jhowk.popularmovies.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -13,7 +16,7 @@ import java.util.Vector;
  * Object representing a piece of content in TMDB's system.
  * Created by Jason Howk
  */
-public class TMDBContentItem {
+public class TMDBContentItem implements Parcelable {
     // JSON API Keys
     private static final String POSTER_PATH = "poster_path";
     private static final String ADULT = "adult";
@@ -133,4 +136,69 @@ public class TMDBContentItem {
     public Float getVoteAverage() {
         return mVoteAverage;
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Parcelable
+    ///////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(this.mJSONObject.toString());
+        dest.writeString(this.mId);
+        dest.writeString(this.mTitle);
+        dest.writeString(this.mOriginalTitle);
+        dest.writeString(this.mOriginalLanguage);
+        dest.writeValue(this.mAdult);
+        dest.writeString(this.mOverview);
+        dest.writeString(this.mPosterPath);
+        dest.writeLong(mReleaseDate != null ? mReleaseDate.getTime() : -1);
+        //dest.writeList(this.mGenreIds);
+        dest.writeString(this.mBackdropPath);
+        dest.writeValue(this.mPopularity);
+        dest.writeValue(this.mVoteCount);
+        dest.writeValue(this.mVideo);
+        dest.writeValue(this.mVoteAverage);
+    }
+
+    protected TMDBContentItem(Parcel in) {
+        try {
+            this.mJSONObject = new JSONObject(in.readString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+            this.mJSONObject = null;
+        }
+        this.mId = in.readString();
+        this.mTitle = in.readString();
+        this.mOriginalTitle = in.readString();
+        this.mOriginalLanguage = in.readString();
+        this.mAdult = (Boolean) in.readValue(Boolean.class.getClassLoader());
+        this.mOverview = in.readString();
+        this.mPosterPath = in.readString();
+        long tmpMReleaseDate = in.readLong();
+        this.mReleaseDate = tmpMReleaseDate == -1 ? null : new Date(tmpMReleaseDate);
+        //this.mGenreIds = new ArrayList<Integer>();
+        //in.readList(this.mGenreIds, Integer.class.getClassLoader());
+        this.mBackdropPath = in.readString();
+        this.mPopularity = (Float) in.readValue(Float.class.getClassLoader());
+        this.mVoteCount = (Long) in.readValue(Long.class.getClassLoader());
+        this.mVideo = (Boolean) in.readValue(Boolean.class.getClassLoader());
+        this.mVoteAverage = (Float) in.readValue(Float.class.getClassLoader());
+    }
+
+    public static final Parcelable.Creator<TMDBContentItem> CREATOR = new Parcelable.Creator<TMDBContentItem>() {
+        @Override
+        public TMDBContentItem createFromParcel(Parcel source) {
+            return new TMDBContentItem(source);
+        }
+
+        @Override
+        public TMDBContentItem[] newArray(int size) {
+            return new TMDBContentItem[size];
+        }
+    };
 }
