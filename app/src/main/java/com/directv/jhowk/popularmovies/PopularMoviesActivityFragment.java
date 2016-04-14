@@ -3,7 +3,6 @@ package com.directv.jhowk.popularmovies;
 import android.content.Intent;
 import android.content.res.TypedArray;
 import android.os.Bundle;
-import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -43,15 +42,20 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
     private GridView mGridView;
     private Spinner mSpinner;
     private TypedArray mSectionsArray;
-    private @IdRes int mCurrentLoaderResId;
+    private int mCurrentLoaderResId;
     private ArrayList<TMDBContentItem> mContentItems;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Log.d(LOG_TAG, "onCreate: Creating fragment.");
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.d(LOG_TAG, "onCreateView: Creating view.");
         View fragment = inflater.inflate(R.layout.fragment_popular_movies, container, false);
-
-        getLoaderManager().initLoader(MOVIE_POPULAR_LOADER_ID, null, this);//.forceLoad();
 
         mSwipeRefreshLayout = (SwipeRefreshLayout) fragment.findViewById(R.id.swipeLayout);
         mGridView = (GridView) fragment.findViewById(R.id.gridview);
@@ -62,6 +66,7 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        Log.d(LOG_TAG, "onActivityCreated: Activity created...");
 
         // Spinner
         mSectionsArray = getResources().obtainTypedArray(R.array.sections_rid);
@@ -122,7 +127,7 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
     }
 
     @Override
-    public void onLoaderReset(android.support.v4.content.Loader loader) {
+    public void onLoaderReset(Loader<ArrayList<TMDBContentItem>> loader) {
         Log.d(LOG_TAG, "onLoaderReset: Got on loader reset.");
     }
 
@@ -191,7 +196,7 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(getActivity() ,PopularMoviesDetailActivity.class);
+                Intent intent = new Intent(getActivity(), PopularMoviesDetailActivity.class);
                 Log.d(LOG_TAG, "onItemClick: Creating intent for detail: " + mContentItems.get(position).getTitle());
                 intent.putExtra(EXTRA_CONTENT_ITEM, mContentItems.get(position));
                 startActivity(intent);

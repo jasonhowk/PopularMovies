@@ -11,18 +11,30 @@
               android:orientation="vertical">
 
 
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="125dp"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Chappie"
-        android:id="@+id/textView"
-        android:background="@color/colorPrimary"
-        android:textColor="@android:color/white"
-        android:textSize="36sp"
-        android:paddingLeft="30dp"
-        android:gravity="center_vertical"
-        />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="200dp">
+
+        <ImageView
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:id="@+id/backdropImageView"
+            android:adjustViewBounds="true"
+            android:scaleType="centerCrop"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Chappie"
+            android:id="@+id/textView"
+            android:background="@color/colorPrimary"
+            android:textColor="@android:color/white"
+            android:textSize="36sp"
+            android:paddingLeft="30dp"
+            android:gravity="center_vertical"
+            android:alpha="0.0"/>
+    </RelativeLayout>
 
     <ScrollView
         android:layout_width="match_parent"
