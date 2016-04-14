@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="150dp"
+        android:id="@+id/posterImageView"
+        android:background="@color/test"
+        android:layout_marginLeft="30dp"
+        android:layout_marginTop="30dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="2015"
+        android:id="@+id/yearTextView"
+        android:layout_alignTop="@+id/posterImageView"
+        android:layout_toRightOf="@+id/posterImageView"
+        android:layout_toEndOf="@+id/posterImageView"
+        android:layout_marginLeft="30dp"
+        android:layout_marginStart="30dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="120min"
+        android:id="@+id/runtimeTextView"
+        android:layout_below="@+id/yearTextView"
+        android:layout_alignLeft="@+id/yearTextView"
+        android:layout_alignStart="@+id/yearTextView"
+        android:layout_marginTop="10dp"
+        android:textStyle="italic"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="8.1/10"
+        android:id="@+id/popularityTextView"
+        android:layout_below="@+id/runtimeTextView"
+        android:layout_alignLeft="@+id/runtimeTextView"
+        android:layout_alignStart="@id/yearTextView"
+        android:layout_marginTop="10dp"/>
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Every chile comes into the world full of promise, and none more so that Chappie.  He is gifted, special prodigy.  Chappie is a robot."
+        android:id="@+id/overviewTextView"
+        android:layout_below="@+id/posterImageView"
+        android:layout_marginTop="30dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"/>
+</RelativeLayout>

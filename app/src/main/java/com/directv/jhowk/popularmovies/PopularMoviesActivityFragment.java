@@ -1,5 +1,6 @@
 package com.directv.jhowk.popularmovies;
 
+import android.content.Intent;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
@@ -31,6 +32,8 @@ import java.util.ArrayList;
 public class PopularMoviesActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<ArrayList<TMDBContentItem>>, AdapterView.OnItemSelectedListener {
     private static final String LOG_TAG = PopularMoviesActivityFragment.class.getSimpleName();
 
+    public static final String EXTRA_CONTENT_ITEM = "com.directv.jhowk.popularMovies.model.TMDBContentItem";
+
     private static final int MOVIE_POPULAR_LOADER_ID = 1;
     private static final int MOVIE_TOP_RATED_LOADER_ID = 2;
 
@@ -41,6 +44,7 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
     private Spinner mSpinner;
     private TypedArray mSectionsArray;
     private @IdRes int mCurrentLoaderResId;
+    private ArrayList<TMDBContentItem> mContentItems;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -49,24 +53,8 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
 
         getLoaderManager().initLoader(MOVIE_POPULAR_LOADER_ID, null, this);//.forceLoad();
 
-        // Swipe Refresh
         mSwipeRefreshLayout = (SwipeRefreshLayout) fragment.findViewById(R.id.swipeLayout);
-        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                Log.d(LOG_TAG, "onRefresh: Refreshing data.");
-                refresh();
-            }
-        });
-
-        // GridView
         mGridView = (GridView) fragment.findViewById(R.id.gridview);
-        mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(getContext(), "" + position, Toast.LENGTH_SHORT).show();
-            }
-        });
 
         return fragment;
     }
@@ -90,11 +78,6 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
         mSectionsArray.recycle();
     }
 
-    private void refresh() {
-        Log.d(LOG_TAG, "refresh: Restarting loader...");
-        getLoaderManager().restartLoader(mCurrentLoaderResId, null, this);
-    }
-
     ///////////////////////////////////////////////////////////////////////////
     // LoaderManager.LoaderCallbacks
     ///////////////////////////////////////////////////////////////////////////
@@ -103,8 +86,12 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
     public void onLoadFinished(Loader<ArrayList<TMDBContentItem>> loader, ArrayList<TMDBContentItem> data) {
         Log.d(LOG_TAG, "onLoadFinished: Got on load finished.");
         if (data != null) {
-            Log.d(LOG_TAG, "onLoadFinished: LOADER DATA: " + data.toString());
-            Log.d(LOG_TAG, "onLoadFinished: Loader finished... ");
+            Log.d(LOG_TAG, "onLoadFinished: Data received. ");
+
+            // Configure grid listeners.
+            configureGridListeners();
+
+            // Destroy loader.
             switch (loader.getId()) {
                 case MOVIE_POPULAR_LOADER_ID:
                     getLoaderManager().destroyLoader(MOVIE_POPULAR_LOADER_ID);
@@ -126,7 +113,8 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
                 Log.d(LOG_TAG, "onLoadFinished: MAX POSTERS:" + maxPosters);
                 mGridView.setNumColumns((int) maxPosters);
             }
-            mGridView.setAdapter(new TMDBImageAdapter(getContext(), data));
+            mContentItems = data;
+            mGridView.setAdapter(new TMDBImageAdapter(getContext(), mContentItems));
         } else {
             Toast.makeText(getContext(), "Unable to download data.  Please try again.", Toast.LENGTH_SHORT).show();
         }
@@ -179,5 +167,35 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
         Log.d(LOG_TAG, "onNothingSelected.");
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Private Methods
+    ///////////////////////////////////////////////////////////////////////////
+    private void refresh() {
+        Log.d(LOG_TAG, "refresh: Restarting loader...");
+        getLoaderManager().restartLoader(mCurrentLoaderResId, null, this);
+    }
+
+    private void configureGridListeners() {
+        // Swipe Refresh
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                Log.d(LOG_TAG, "onRefresh: Refreshing data.");
+                refresh();
+            }
+        });
+
+        // GridView
+        mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent(getActivity() ,PopularMoviesDetailActivity.class);
+                Log.d(LOG_TAG, "onItemClick: Creating intent for detail: " + mContentItems.get(position).getTitle());
+                intent.putExtra(EXTRA_CONTENT_ITEM, mContentItems.get(position));
+                startActivity(intent);
+            }
+        });
     }
 }

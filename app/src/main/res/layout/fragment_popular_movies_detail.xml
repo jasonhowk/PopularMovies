@@ -1,0 +1,37 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:paddingBottom="@dimen/activity_vertical_margin"
+              android:paddingLeft="@dimen/activity_horizontal_margin"
+              android:paddingRight="@dimen/activity_horizontal_margin"
+              android:paddingTop="@dimen/activity_vertical_margin"
+              tools:context="com.directv.jhowk.popularmovies.PopularMoviesDetailActivityFragment"
+              tools:showIn="@layout/activity_popular_movies_detail"
+              android:orientation="vertical">
+
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="125dp"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Chappie"
+        android:id="@+id/textView"
+        android:background="@color/colorPrimary"
+        android:textColor="@android:color/white"
+        android:textSize="36sp"
+        android:paddingLeft="30dp"
+        android:gravity="center_vertical"
+        />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <include
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            layout="@layout/content_detail_layout"/>
+    </ScrollView>
+
+</LinearLayout>
