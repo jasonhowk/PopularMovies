@@ -15,6 +15,7 @@ import java.util.ArrayList;
  */
 public class TMDBPopularLoader extends AsyncTaskLoader<ArrayList<TMDBContentItem>>{
     private static final String LOG_TAG = TMDBPopularLoader.class.getSimpleName();
+    private ArrayList<TMDBContentItem> mContentItems;
 
     public TMDBPopularLoader(Context context) {
         super(context);
@@ -40,15 +41,34 @@ public class TMDBPopularLoader extends AsyncTaskLoader<ArrayList<TMDBContentItem
     protected void onStartLoading() {
         super.onStartLoading();
         Log.d(LOG_TAG, "onStartLoading: On start loading...");
-//        if (takeContentChanged()) {
-        forceLoad();
-//        }
+        Log.d(LOG_TAG, "onStartLoading: mcontentItems:" + mContentItems);
+        if (mContentItems != null) {
+            Log.d(LOG_TAG, "onStartLoading: Returning cached results.");
+            deliverResult(mContentItems);
+        }
+
+        if (takeContentChanged() || mContentItems == null){
+            Log.d(LOG_TAG, "onStartLoading: Force loading...");
+            forceLoad();
+        }
     }
 
 
     @Override
     public void deliverResult(ArrayList<TMDBContentItem> data) {
-        super.deliverResult(data);
         Log.d(LOG_TAG, "deliverResult: Delivering results...");
+
+        if (isReset()) {
+            Log.d(LOG_TAG, "deliverResult: Reset.  NOT returning data...");
+            return;
+        }
+
+        mContentItems = data;
+
+        if (isStarted()) {
+            super.deliverResult(mContentItems);
+        }
+
+
     }
 }
