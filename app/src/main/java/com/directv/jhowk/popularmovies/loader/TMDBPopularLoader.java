@@ -1,6 +1,5 @@
 package com.directv.jhowk.popularmovies.loader;
 
-import android.support.v4.content.AsyncTaskLoader;
 import android.content.Context;
 import android.util.Log;
 
@@ -13,13 +12,13 @@ import java.util.ArrayList;
 /**
  * Created by Jason Howk
  */
-public class TMDBPopularLoader extends AsyncTaskLoader<ArrayList<TMDBContentItem>>{
+public class TMDBPopularLoader extends TMDBBaseLoader {
     private static final String LOG_TAG = TMDBPopularLoader.class.getSimpleName();
     private ArrayList<TMDBContentItem> mContentItems;
 
     public TMDBPopularLoader(Context context) {
         super(context);
-        Log.d(LOG_TAG, "TMDBPopularLoader: Creating instance.");
+        Log.d(LOG_TAG, "TMDBPopularLoader: Creating loader.");
     }
 
     @Override
@@ -35,40 +34,5 @@ public class TMDBPopularLoader extends AsyncTaskLoader<ArrayList<TMDBContentItem
         }
 
         return result;
-    }
-
-    @Override
-    protected void onStartLoading() {
-        super.onStartLoading();
-        Log.d(LOG_TAG, "onStartLoading: On start loading...");
-        Log.d(LOG_TAG, "onStartLoading: mcontentItems:" + mContentItems);
-        if (mContentItems != null) {
-            Log.d(LOG_TAG, "onStartLoading: Returning cached results.");
-            deliverResult(mContentItems);
-        }
-
-        if (takeContentChanged() || mContentItems == null){
-            Log.d(LOG_TAG, "onStartLoading: Force loading...");
-            forceLoad();
-        }
-    }
-
-
-    @Override
-    public void deliverResult(ArrayList<TMDBContentItem> data) {
-        Log.d(LOG_TAG, "deliverResult: Delivering results...");
-
-        if (isReset()) {
-            Log.d(LOG_TAG, "deliverResult: Reset.  NOT returning data...");
-            return;
-        }
-
-        mContentItems = data;
-
-        if (isStarted()) {
-            super.deliverResult(mContentItems);
-        }
-
-
     }
 }

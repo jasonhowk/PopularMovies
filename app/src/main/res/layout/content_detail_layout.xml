@@ -9,13 +9,14 @@
         android:id="@+id/posterImageView"
         android:background="@color/test"
         android:layout_marginLeft="30dp"
-        android:layout_marginTop="30dp"/>
+        android:layout_marginTop="30dp"
+        android:contentDescription="@string/program_poster"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="TITLE"
+        android:text="REALLY LONG TITLE. NO REALLY REALLY REALLY LONG"
         android:id="@+id/titleTextView"
         android:layout_marginLeft="30dp"
         android:layout_marginStart="30dp"
@@ -24,7 +25,9 @@
         android:layout_toEndOf="@+id/posterImageView"
         android:textStyle="bold"
         android:textSize="20sp"
-        android:layout_marginRight="30dp"/>
+        android:layout_marginRight="30dp"
+        android:maxLines="3"
+        android:ellipsize="end"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -34,7 +37,8 @@
         android:id="@+id/yearTextView"
         android:layout_below="@+id/titleTextView"
         android:layout_alignStart="@+id/popularityTextView"
-        android:layout_marginTop="10dp"/>
+        android:layout_marginTop="10dp"
+        android:layout_alignLeft="@+id/titleTextView"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -44,7 +48,8 @@
         android:id="@+id/popularityTextView"
         android:layout_marginTop="10dp"
         android:layout_alignStart="@+id/titleTextView"
-        android:layout_below="@+id/yearTextView"/>
+        android:layout_below="@+id/yearTextView"
+        android:layout_alignLeft="@+id/titleTextView"/>
 
     <TextView
         android:layout_width="fill_parent"
@@ -57,5 +62,19 @@
         android:layout_alignParentStart="true"
         android:layout_marginLeft="30dp"
         android:layout_marginRight="30dp"/>
+
+    <ImageView
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:id="@+id/favoriteImageView"
+        android:clickable="true"
+        android:src="@drawable/ic_favorite_border_black_24dp"
+        android:adjustViewBounds="false"
+        android:scaleType="center"
+        android:layout_below="@+id/popularityTextView"
+        android:layout_toRightOf="@+id/posterImageView"
+        android:layout_toEndOf="@+id/posterImageView"
+        android:layout_marginLeft="15dp"
+        android:contentDescription="@string/favorite_button"/>
 
 </RelativeLayout>

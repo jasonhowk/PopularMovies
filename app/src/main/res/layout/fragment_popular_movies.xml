@@ -14,10 +14,10 @@
         android:id="@+id/gridview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/colorAccent"
         android:horizontalSpacing="0dp"
         android:numColumns="auto_fit"
         android:stretchMode="columnWidth"
+        android:background="@android:color/darker_gray"
         android:verticalSpacing="0dp"
         />
 

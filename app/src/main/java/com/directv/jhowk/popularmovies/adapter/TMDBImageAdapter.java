@@ -24,8 +24,9 @@ public class TMDBImageAdapter extends BaseAdapter {
     private static final String LOG_TAG = TMDBImageAdapter.class.getSimpleName();
 
     private final Context mContext;
-    private final ArrayList<TMDBContentItem> mContentItems;
     private final Picasso mPicasso;
+
+    public ArrayList<TMDBContentItem> mContentItems;
 
     public TMDBImageAdapter(Context c, ArrayList<TMDBContentItem> contentItems) {
         mContext = c;
@@ -76,5 +77,18 @@ public class TMDBImageAdapter extends BaseAdapter {
         }
 
         return posterGridItem;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Properties
+    ///////////////////////////////////////////////////////////////////////////
+
+    public ArrayList<TMDBContentItem> getContentItems() {
+        return mContentItems;
+    }
+
+    public void setContentItems(ArrayList<TMDBContentItem> contentItems) {
+        mContentItems = contentItems;
+        notifyDataSetChanged();
     }
 }

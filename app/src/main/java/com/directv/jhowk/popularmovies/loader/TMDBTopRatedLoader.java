@@ -1,6 +1,5 @@
 package com.directv.jhowk.popularmovies.loader;
 
-import android.support.v4.content.AsyncTaskLoader;
 import android.content.Context;
 import android.util.Log;
 
@@ -13,11 +12,12 @@ import java.util.ArrayList;
 /**
  * Created by Jason Howk
  */
-public class TMDBTopRatedLoader extends AsyncTaskLoader<ArrayList<TMDBContentItem>>{
+public class TMDBTopRatedLoader extends TMDBBaseLoader {
     private static final String LOG_TAG = TMDBTopRatedLoader.class.getSimpleName();
 
     public TMDBTopRatedLoader(Context context) {
         super(context);
+        Log.d(LOG_TAG, "TMDBTopRatedLoader: Creating loader.");
     }
 
     @Override
@@ -33,20 +33,5 @@ public class TMDBTopRatedLoader extends AsyncTaskLoader<ArrayList<TMDBContentIte
         }
 
         return result;
-    }
-
-    @Override
-    protected void onStartLoading() {
-        super.onStartLoading();
-        Log.d(LOG_TAG, "onStartLoading: On start loading...");
-//        if (takeContentChanged()) {
-        forceLoad();
-//        }
-    }
-
-    @Override
-    public void deliverResult(ArrayList<TMDBContentItem> data) {
-        super.deliverResult(data);
-        Log.d(LOG_TAG, "deliverResult: Delivering results...");
     }
 }
