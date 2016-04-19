@@ -1,9 +1,11 @@
 package com.directv.jhowk.popularmovies;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.LoaderManager;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -33,6 +35,7 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
     private static final String LOG_TAG = PopularMoviesActivityFragment.class.getSimpleName();
 
     public static final String EXTRA_CONTENT_ITEM = "com.directv.jhowk.popularMovies.model.TMDBContentItem";
+    public static final String PREFERENCE_SECTION_POSITION = "com.directv.jhowk.popularMovies.preference.section.position";
 
     private static final int MOVIE_POPULAR_LOADER_ID = 1;
     private static final int MOVIE_TOP_RATED_LOADER_ID = 2;
@@ -46,11 +49,14 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
     private int mCurrentLoaderResId;
     private ArrayList<TMDBContentItem> mContentItems;
     private TMDBImageAdapter mImageAdapter;
+    private SharedPreferences mPreferences;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(LOG_TAG, "onCreate: Creating fragment.");
+        // Preferences preferences.
+        mPreferences = getActivity().getPreferences(Activity.MODE_PRIVATE);
     }
 
     @Override
@@ -71,12 +77,21 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
         Log.d(LOG_TAG, "onActivityCreated: Activity created...");
 
         // Spinner
+        Log.d(LOG_TAG, "onActivityCreated: Creating spinner.");
         mSectionsArray = getResources().obtainTypedArray(R.array.sections_rid);
         mSpinner = (Spinner) getActivity().findViewById(R.id.nav_spinner);
         ArrayAdapter<CharSequence> arrayAdapter = ArrayAdapter.createFromResource(getActivity().getApplicationContext(), R.array.sections_rid, R.layout.nav_spinner_item);
         arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mSpinner.setAdapter(arrayAdapter);
         mSpinner.setOnItemSelectedListener(this);
+
+        // Load last menu selection from preferences.
+        Log.d(LOG_TAG, "onActivityCreated: Loading preferences...");
+        int position = mPreferences.getInt(PREFERENCE_SECTION_POSITION, -1);
+        if (position >= 0) {
+            Log.d(LOG_TAG, "onActivityCreated: Setting spinner selection based on preferences.");
+            mSpinner.setSelection(position);
+        }
     }
 
     @Override
@@ -178,6 +193,13 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
                 Log.d(LOG_TAG, "onItemSelected: Top Rated selected.");
                 getLoaderManager().initLoader(MOVIE_TOP_RATED_LOADER_ID, null, this);
                 break;
+        }
+        if (resId > 0) {
+            // We have a value resource.  Save.
+            Log.d(LOG_TAG, "onItemSelected: setting preference.");
+            SharedPreferences.Editor editor = mPreferences.edit();
+            editor.putInt(PREFERENCE_SECTION_POSITION, position);
+            editor.commit();
         }
     }
 
