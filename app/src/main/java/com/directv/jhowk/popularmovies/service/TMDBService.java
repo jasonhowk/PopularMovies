@@ -1,6 +1,5 @@
 package com.directv.jhowk.popularmovies.service;
 
-import android.content.Context;
 import android.util.Log;
 
 import com.directv.jhowk.popularmovies.model.TMDBContentItem;
@@ -30,32 +29,32 @@ public class TMDBService {
     private static final String BASE_IMAGE_URL = "http://image.tmdb.org/t/p/w500"; // Will be replaced with call to configuration.
     private static final String BASE_BACKDROP_URL = "http://image.tmdb.org/t/p/w780"; // Will be replaced with call to configuration.
     private static final String API_KEY = "api_key";
+
     private static final String CONFIGURATION_URL = "configuration";
     private static final String POPULAR_URL = "movie/popular";
     private static final String TOP_RATED_URL = "movie/top_rated";
+    private static final String NOW_PLAYING_URL = "movie/now_playing";
+    private static final String UPCOMING_URL = "movie/upcoming";
 
     private static TMDBService sTMDBService;
-    private final Context mContext;
     private final String mApiKey;
 
     
-    private TMDBService(Context context, String apiKey) {
-        mContext = context;
-        mApiKey = apiKey;
+    private TMDBService(String apiKey) {
+            mApiKey = apiKey;
     }
 
     /**
      * Retrieves the current TMDB data store.
      *
-     * @param context The application context. Must not be NULL.
      * @param apiKey The API key. Must NOT be null.
      * @return The operational data store configured with context and api key.
      * @throws Exception
      */
-    public static TMDBService get(Context context, @SuppressWarnings("SameParameterValue") String apiKey) throws Exception {
+    public static TMDBService get( @SuppressWarnings("SameParameterValue") String apiKey) throws Exception {
         if (sTMDBService == null) {
-            if (context != null && apiKey != null) {
-                sTMDBService = new TMDBService(context.getApplicationContext(), apiKey);
+            if (apiKey != null) {
+                sTMDBService = new TMDBService(apiKey);
             } else {
                 throw new Exception("Unable to instantiate store. Missing/invalid required parameters.");
             }
@@ -72,7 +71,8 @@ public class TMDBService {
      * every day.
      *
      * http://api.themoviedb.org/3/movie/popular?api_key=xxxx
-     * @return Collection of PopularMovie
+     * @return Collection of TMDBContentItems
+     * @throws Exception
      */
     public ArrayList<TMDBContentItem> getMoviesMostPopular() throws Exception {
         Log.d(LOG_TAG, "getMoviesMostPopular: Calling /movie/popular");
@@ -84,11 +84,35 @@ public class TMDBService {
      * movies that have 50 or more votes. This list refreshes every day.
      *
      * http://api.themoviedb.org/3/movie/top_rated?api_key=xxxx
-     * @return String JSON result string (for now.)
+     * @return Collection of TMDBContentItems
+     * @throws Exception
      */
     public ArrayList<TMDBContentItem> getMoviesTopRated() throws Exception{
-        Log.d(LOG_TAG,"Calling /movie/top_rated");
+        Log.d(LOG_TAG, "getMoviesTopRated: Calling /movie/top_rated");
         return parseResult(getURL(TOP_RATED_URL));
+    }
+
+    /**
+     * Get the list of movies playing that have been, or are being released this week.
+     * This list refreshes every day.
+     *
+     * @return Collection of TMDBContentItems
+     * @throws Exception
+     */
+    public ArrayList<TMDBContentItem> getMoviesNowPlaying()  throws Exception {
+        Log.d(LOG_TAG, "getMoviesNowPlaying: Calling /movie/now_playing");
+        return parseResult(getURL(NOW_PLAYING_URL));
+    }
+
+    /**
+     * Get the list of upcoming movies by release date. This list refreshes every day.
+     *
+     * @return Collection of TMDBContentItems
+     * @throws Exception
+     */
+    public ArrayList<TMDBContentItem> getMoviesUpcoming() throws Exception {
+        Log.d(LOG_TAG, "getMoviesUpcoming: Calling /movie/upcoming");
+        return parseResult(getURL(UPCOMING_URL));
     }
 
     ///////////////////////////////////////////////////////////////////////////

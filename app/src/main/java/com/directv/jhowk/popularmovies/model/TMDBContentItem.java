@@ -16,6 +16,7 @@ import java.util.Vector;
  * Object representing a piece of content in TMDB's system.
  * Created by Jason Howk
  */
+@SuppressWarnings("ALL")
 public class TMDBContentItem implements Parcelable {
     // JSON API Keys
     private static final String POSTER_PATH = "poster_path";
@@ -77,6 +78,7 @@ public class TMDBContentItem implements Parcelable {
     ///////////////////////////////////////////////////////////////////////////
     // Properties
     ///////////////////////////////////////////////////////////////////////////
+
     public JSONObject getJSONObject() {
         return mJSONObject;
     }

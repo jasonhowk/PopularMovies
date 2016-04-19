@@ -2,9 +2,13 @@
 <resources>
     <string name="popular">Most Popular</string>
     <string name="topRated">Top Rated</string>
+    <string name="upcoming">Upcoming</string>
+    <string name="nowPlaying">Now Playing</string>
 
     <array name="sections_rid">
         <item>@string/popular</item>
         <item>@string/topRated</item>
+        <item>@string/nowPlaying</item>
+        <item>@string/upcoming</item>
     </array>
 </resources>

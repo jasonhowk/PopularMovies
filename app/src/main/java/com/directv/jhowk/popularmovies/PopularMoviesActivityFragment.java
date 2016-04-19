@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -22,8 +23,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.directv.jhowk.popularmovies.adapter.TMDBImageAdapter;
-import com.directv.jhowk.popularmovies.loader.TMDBPopularLoader;
-import com.directv.jhowk.popularmovies.loader.TMDBTopRatedLoader;
+import com.directv.jhowk.popularmovies.loader.TMDBLoader;
 import com.directv.jhowk.popularmovies.model.TMDBContentItem;
 
 import java.util.ArrayList;
@@ -33,23 +33,18 @@ import java.util.ArrayList;
  */
 public class PopularMoviesActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<ArrayList<TMDBContentItem>>, AdapterView.OnItemSelectedListener {
     private static final String LOG_TAG = PopularMoviesActivityFragment.class.getSimpleName();
-
     public static final String EXTRA_CONTENT_ITEM = "com.directv.jhowk.popularMovies.model.TMDBContentItem";
-    public static final String PREFERENCE_SECTION_POSITION = "com.directv.jhowk.popularMovies.preference.section.position";
-
-    private static final int MOVIE_POPULAR_LOADER_ID = 1;
-    private static final int MOVIE_TOP_RATED_LOADER_ID = 2;
-
-    private static final int POSTER_WIDTH = 500;
+    private static final String PREFERENCE_SECTION_POSITION = "com.directv.jhowk.popularMovies.preference.section.position";
+    private static final int TMDB_LOADER_ID = 1;
 
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private GridView mGridView;
-    private Spinner mSpinner;
     private TypedArray mSectionsArray;
-    private int mCurrentLoaderResId;
     private ArrayList<TMDBContentItem> mContentItems;
     private TMDBImageAdapter mImageAdapter;
     private SharedPreferences mPreferences;
+
+    private @StringRes int mSelectedSectionId;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -78,18 +73,18 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
 
         // Spinner
         mSectionsArray = getResources().obtainTypedArray(R.array.sections_rid);
-        mSpinner = (Spinner) getActivity().findViewById(R.id.nav_spinner);
+        Spinner spinner = (Spinner) getActivity().findViewById(R.id.nav_spinner);
         ArrayAdapter<CharSequence> arrayAdapter = ArrayAdapter.createFromResource(getActivity().getApplicationContext(), R.array.sections_rid, R.layout.nav_spinner_item);
         arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mSpinner.setAdapter(arrayAdapter);
-        mSpinner.setOnItemSelectedListener(this);
+        spinner.setAdapter(arrayAdapter);
+        spinner.setOnItemSelectedListener(this);
 
         // Load last menu selection from preferences.
         Log.d(LOG_TAG, "onActivityCreated: Loading preferences...");
         int position = mPreferences.getInt(PREFERENCE_SECTION_POSITION, -1);
         if (position >= 0) {
             Log.d(LOG_TAG, "onActivityCreated: Setting spinner selection based on preferences.");
-            mSpinner.setSelection(position);
+            spinner.setSelection(position);
         }
     }
 
@@ -113,14 +108,7 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
             configureGridListeners();
 
             // Destroy loader.
-            switch (loader.getId()) {
-                case MOVIE_POPULAR_LOADER_ID:
-                    getLoaderManager().destroyLoader(MOVIE_POPULAR_LOADER_ID);
-                    break;
-                case MOVIE_TOP_RATED_LOADER_ID:
-                    getLoaderManager().destroyLoader(MOVIE_TOP_RATED_LOADER_ID);
-                    break;
-            }
+            getLoaderManager().destroyLoader(TMDB_LOADER_ID);
 
             /**
              * Set the number of columns.  We calculate as the auto_fit param does not
@@ -160,19 +148,7 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
     @Override
     public Loader<ArrayList<TMDBContentItem>> onCreateLoader(int id, Bundle args) {
         Log.d(LOG_TAG, "onCreateLoader: Got on create loader.");
-        Loader<ArrayList<TMDBContentItem>> loader = null;
-        switch (id) {
-            case MOVIE_POPULAR_LOADER_ID:
-                Log.d(LOG_TAG, "onCreateLoader: Start popular loader...");
-                loader = new TMDBPopularLoader(getActivity().getApplicationContext());
-                break;
-            case MOVIE_TOP_RATED_LOADER_ID:
-                Log.d(LOG_TAG, "onCreateLoader: Start top rated loader...");
-                loader = new TMDBTopRatedLoader(getActivity().getApplicationContext());
-                break;
-        }
-        mCurrentLoaderResId = id;
-        return loader;
+        return new TMDBLoader(getActivity().getApplicationContext(), mSelectedSectionId);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -183,22 +159,14 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         int resId = mSectionsArray.getResourceId(position, -1);
         Log.d(LOG_TAG, "onItemSelected: selected resid:" + resId);
-        switch (resId) {
-            case R.string.popular:
-                Log.d(LOG_TAG, "onItemSelected: Popular selected.");
-                getLoaderManager().initLoader(MOVIE_POPULAR_LOADER_ID, null, this);
-                break;
-            case R.string.topRated:
-                Log.d(LOG_TAG, "onItemSelected: Top Rated selected.");
-                getLoaderManager().initLoader(MOVIE_TOP_RATED_LOADER_ID, null, this);
-                break;
-        }
         if (resId > 0) {
+            mSelectedSectionId = resId;
+            getLoaderManager().restartLoader(TMDB_LOADER_ID, null, this);
             // We have a valid resource.  Save.
             Log.d(LOG_TAG, "onItemSelected: setting preference.");
             SharedPreferences.Editor editor = mPreferences.edit();
             editor.putInt(PREFERENCE_SECTION_POSITION, position);
-            editor.commit();
+            editor.apply();
         }
     }
 
@@ -212,7 +180,7 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
     ///////////////////////////////////////////////////////////////////////////
     private void refresh() {
         Log.d(LOG_TAG, "refresh: Restarting loader...");
-        getLoaderManager().restartLoader(mCurrentLoaderResId, null, this);
+        getLoaderManager().restartLoader(TMDB_LOADER_ID, null, this);
     }
 
     private void configureGridListeners() {

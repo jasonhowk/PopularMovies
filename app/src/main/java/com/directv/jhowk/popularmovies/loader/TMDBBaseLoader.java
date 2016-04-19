@@ -11,11 +11,11 @@ import java.util.ArrayList;
 /**
  * Created by Jason Howk
  */
-public abstract class TMDBBaseLoader extends AsyncTaskLoader<ArrayList<TMDBContentItem>> {
+abstract class TMDBBaseLoader extends AsyncTaskLoader<ArrayList<TMDBContentItem>> {
     private static final String LOG_TAG = TMDBBaseLoader.class.getSimpleName();
     private ArrayList<TMDBContentItem> mContentItems;
     
-    public TMDBBaseLoader(Context context) {
+    TMDBBaseLoader(Context context) {
         super(context);
     }
 
