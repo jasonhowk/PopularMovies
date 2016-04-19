@@ -8,31 +8,27 @@
         android:layout_height="150dp"
         android:id="@+id/posterImageView"
         android:background="@color/test"
-        android:layout_marginLeft="30dp"
-        android:layout_marginTop="30dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="20dp"
         android:contentDescription="@string/program_poster"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textAppearance="@style/Base.TextAppearance.AppCompat.Title"
         android:text="REALLY LONG TITLE. NO REALLY REALLY REALLY LONG"
         android:id="@+id/titleTextView"
-        android:layout_marginLeft="30dp"
-        android:layout_marginStart="30dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
         android:layout_alignTop="@+id/posterImageView"
         android:layout_toRightOf="@+id/posterImageView"
-        android:layout_toEndOf="@+id/posterImageView"
-        android:textStyle="bold"
-        android:textSize="20sp"
-        android:layout_marginRight="30dp"
         android:maxLines="3"
         android:ellipsize="end"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textAppearance="@style/Base.TextAppearance.AppCompat.Subhead"
         android:text="YEAR"
         android:id="@+id/yearTextView"
         android:layout_below="@+id/titleTextView"
@@ -43,7 +39,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textAppearance="@style/Base.TextAppearance.AppCompat.Caption"
         android:text="8.1/10"
         android:id="@+id/popularityTextView"
         android:layout_marginTop="10dp"
@@ -57,11 +53,13 @@
         android:text="OVERVIEW"
         android:id="@+id/overviewTextView"
         android:layout_below="@+id/posterImageView"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="20dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginLeft="30dp"
-        android:layout_marginRight="30dp"/>
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="20dp"
+        android:textAppearance="@style/Base.TextAppearance.AppCompat.Subhead"/>
 
     <ImageView
         android:layout_width="50dp"
@@ -74,7 +72,7 @@
         android:layout_below="@+id/popularityTextView"
         android:layout_toRightOf="@+id/posterImageView"
         android:layout_toEndOf="@+id/posterImageView"
-        android:layout_marginLeft="15dp"
+        android:layout_marginLeft="5dp"
         android:contentDescription="@string/favorite_button"/>
 
 </RelativeLayout>
