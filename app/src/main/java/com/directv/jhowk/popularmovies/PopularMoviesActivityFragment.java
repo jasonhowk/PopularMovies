@@ -77,7 +77,6 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
         Log.d(LOG_TAG, "onActivityCreated: Activity created...");
 
         // Spinner
-        Log.d(LOG_TAG, "onActivityCreated: Creating spinner.");
         mSectionsArray = getResources().obtainTypedArray(R.array.sections_rid);
         mSpinner = (Spinner) getActivity().findViewById(R.id.nav_spinner);
         ArrayAdapter<CharSequence> arrayAdapter = ArrayAdapter.createFromResource(getActivity().getApplicationContext(), R.array.sections_rid, R.layout.nav_spinner_item);
@@ -195,7 +194,7 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
                 break;
         }
         if (resId > 0) {
-            // We have a value resource.  Save.
+            // We have a valid resource.  Save.
             Log.d(LOG_TAG, "onItemSelected: setting preference.");
             SharedPreferences.Editor editor = mPreferences.edit();
             editor.putInt(PREFERENCE_SECTION_POSITION, position);
