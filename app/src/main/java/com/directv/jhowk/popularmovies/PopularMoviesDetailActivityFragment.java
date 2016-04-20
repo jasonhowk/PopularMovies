@@ -1,6 +1,7 @@
 package com.directv.jhowk.popularmovies;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -40,7 +41,7 @@ public class PopularMoviesDetailActivityFragment extends Fragment {
 
         // Backdrop
         String backdropURL = String.format("%s%s", TMDBService.getBackdropBaseURL(),contentItem.getBackdropPath());
-        ImageView backdropImageView = (ImageView)fragment.findViewById(R.id.backdropImageView);
+        final ImageView backdropImageView = (ImageView)fragment.findViewById(R.id.backdropImageView);
         // This little routine is to dynamically resize the backdrop to the standard 1.777:1 (i.e. 16:9) ratio and
         // calculate the card offset so it's always 75% down the backdrop.  The onGlobalLayout() was a tip from SO.
         fragment.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -48,12 +49,17 @@ public class PopularMoviesDetailActivityFragment extends Fragment {
             public void onGlobalLayout() {
                 int width = getView().getMeasuredWidth();
                 Log.d(LOG_TAG, "onGlobalLayout: WIDTH:" + width);
-                // Calc height.
-                int height = (int)(width / 1.777);
-                (fragment.findViewById(R.id.backdropImageView)).setLayoutParams(new RelativeLayout.LayoutParams(width,height));
-                // Move card view to the correct position based on height.
+                int backdropImageHeight;
                 LinearLayout.LayoutParams llParams = (LinearLayout.LayoutParams)(fragment.findViewById(R.id.card_view)).getLayoutParams();
-                llParams.setMargins(30,(int)(height*.75),30,0);
+                if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                    backdropImageHeight = (int)(width / 1.777);
+                    llParams.setMargins(30, (int) (backdropImageHeight * .75), 30, 0);
+                } else {
+                    backdropImageHeight = (int)(getView().getMeasuredHeight() *.65);
+                    llParams.setMargins(30, (int) (backdropImageHeight * .50), 30, 0);
+                }
+                (fragment.findViewById(R.id.backdropImageView)).setLayoutParams(new RelativeLayout.LayoutParams(width,backdropImageHeight));
+
                 // Remove listener as we only need this to happen once.
                 fragment.getViewTreeObserver().removeGlobalOnLayoutListener(this);
             }
