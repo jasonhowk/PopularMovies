@@ -42,8 +42,10 @@ public class PopularMoviesDetailActivityFragment extends Fragment {
         // Backdrop
         String backdropURL = String.format("%s%s", TMDBService.getBackdropBaseURL(),contentItem.getBackdropPath());
         final ImageView backdropImageView = (ImageView)fragment.findViewById(R.id.backdropImageView);
-        // This little routine is to dynamically resize the backdrop to the standard 1.777:1 (i.e. 16:9) ratio and
-        // calculate the card offset so it's always 75% down the backdrop.  The onGlobalLayout() was a tip from SO.
+        // This little routine is to dynamically resize the backdrop to an appropriate size depending on orientation.
+        // PORTRAIT: Resize to the standard 1.777:1 (i.e. 16:9) and set card offset to 75%.
+        // LANDSCAPE: Resize to 65% of the current views height, and set card offset to 50%.
+        // The onGlobalLayout() was a tip from SO.
         fragment.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
