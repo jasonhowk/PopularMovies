@@ -10,45 +10,61 @@
              tools:context="com.directv.jhowk.popularmovies.PopularMoviesDetailActivityFragment"
              tools:showIn="@layout/activity_popular_movies_detail">
 
-<ScrollView
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                    xmlns:tools="http://schemas.android.com/tools"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                        xmlns:tools="http://schemas.android.com/tools"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
 
-        <ImageView
-            android:id="@+id/backdropImageView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:adjustViewBounds="true"
-            android:background="@color/colorDetailBackground"
-            android:contentDescription="@string/content_backdrop_image"
-            android:scaleType="centerCrop"/>
-
-        <LinearLayout android:id="@+id/card_linear_layout"
-                      xmlns:android="http://schemas.android.com/apk/res/android"
-                      android:layout_width="match_parent"
-                      android:layout_height="match_parent"
-                      android:background="@android:color/transparent">
-
-            <android.support.v7.widget.CardView
-                android:id="@+id/card_view"
-                xmlns:app="http://schemas.android.com/apk/res-auto"
+            <RelativeLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="4dp">
+                android:layout_height="wrap_content">
 
-                <include
-                    layout="@layout/content_detail_layout"
+                <ImageView
+                    android:id="@+id/backdropImageView"
+                    android:layout_width="match_parent"
+                    android:layout_height="300dp"
+                    android:adjustViewBounds="true"
+                    android:background="@color/colorDetailBackground"
+                    android:contentDescription="@string/content_backdrop_image"
+                    android:scaleType="centerCrop"/>
+
+                <ImageView
+                    android:id="@+id/backdropPlayButton"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_centerInParent="true"
+                    android:clickable="true"
+                    android:contentDescription="Play trailer button"
+                    android:src="@android:drawable/ic_media_play"/>
+            </RelativeLayout>
+
+            <LinearLayout android:id="@+id/card_linear_layout"
+                          xmlns:android="http://schemas.android.com/apk/res/android"
+                          android:layout_width="match_parent"
+                          android:layout_height="match_parent"
+                          android:background="@android:color/transparent"
+                          android:orientation="vertical">
+
+                <android.support.v7.widget.CardView
+                    android:id="@+id/card_view"
+                    xmlns:app="http://schemas.android.com/apk/res-auto"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="4dp">
 
-            </android.support.v7.widget.CardView>
-        </LinearLayout>
-    </RelativeLayout>
-</ScrollView>
+                    <include
+                        layout="@layout/content_detail_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+                </android.support.v7.widget.CardView>
+            </LinearLayout>
+
+        </RelativeLayout>
+    </ScrollView>
 
 </FrameLayout>

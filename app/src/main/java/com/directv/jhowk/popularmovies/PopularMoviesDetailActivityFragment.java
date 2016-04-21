@@ -27,6 +27,7 @@ import java.util.Locale;
  */
 public class PopularMoviesDetailActivityFragment extends Fragment {
     private static final String LOG_TAG = PopularMoviesDetailActivityFragment.class.getSimpleName();
+    private static final String YOUTUBE_BASE_URL = "https://www.youtube.com/watch?v=";
 
     public PopularMoviesDetailActivityFragment() {
     }
@@ -94,11 +95,21 @@ public class PopularMoviesDetailActivityFragment extends Fragment {
         TextView overviewTextView = (TextView)fragment.findViewById(R.id.overviewTextView);
         overviewTextView.setText(contentItem.getOverview());
 
+        // Favorite.
         ImageView favoriteImageView = (ImageView)fragment.findViewById(R.id.favoriteImageView);
         favoriteImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Toast.makeText(getContext(),"Favorite clicked.",Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // Trailer
+        ImageView backdropPlayImageView = (ImageView)fragment.findViewById(R.id.backdropPlayButton);
+        backdropPlayImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getContext(),"Backdrop play button clicked.", Toast.LENGTH_SHORT).show();
             }
         });
 
