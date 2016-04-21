@@ -1,5 +1,6 @@
 package com.directv.jhowk.popularmovies.service;
 
+import android.net.Uri;
 import android.util.Log;
 
 import com.directv.jhowk.popularmovies.model.TMDBContentItem;
@@ -18,7 +19,7 @@ import java.util.ArrayList;
 
 /**
  * TMDB.org (http://themoviedb.org) Service Interface.
- *
+ * <p/>
  * Created by Jason Howk.
  */
 public class TMDBService {
@@ -36,12 +37,16 @@ public class TMDBService {
     private static final String NOW_PLAYING_URL = "movie/now_playing";
     private static final String UPCOMING_URL = "movie/upcoming";
 
+    private static final String APPEND_TO_RESPONSE = "append_to_response";
+    private static final String ATR_SECTIONS = "trailers,reviews";
+
+
     private static TMDBService sTMDBService;
     private final String mApiKey;
 
-    
+
     private TMDBService(String apiKey) {
-            mApiKey = apiKey;
+        mApiKey = apiKey;
     }
 
     /**
@@ -51,7 +56,7 @@ public class TMDBService {
      * @return The operational data store configured with context and api key.
      * @throws Exception
      */
-    public static TMDBService get( @SuppressWarnings("SameParameterValue") String apiKey) throws Exception {
+    public static TMDBService get(@SuppressWarnings("SameParameterValue") String apiKey) throws Exception {
         if (sTMDBService == null) {
             if (apiKey != null) {
                 sTMDBService = new TMDBService(apiKey);
@@ -69,27 +74,36 @@ public class TMDBService {
     /**
      * Get the list of popular movies on The Movie Database. This list refreshes
      * every day.
-     *
+     * <p/>
      * http://api.themoviedb.org/3/movie/popular?api_key=xxxx
+     *
      * @return Collection of TMDBContentItems
      * @throws Exception
      */
     public ArrayList<TMDBContentItem> getMoviesMostPopular() throws Exception {
         Log.d(LOG_TAG, "getMoviesMostPopular: Calling /movie/popular");
-        return parseResult(getURL(POPULAR_URL));
+        Uri tmdbUri = getBaseUriBuilder()
+                .appendEncodedPath(POPULAR_URL)
+                .appendQueryParameter(APPEND_TO_RESPONSE,ATR_SECTIONS)
+                .build();
+        return parseResult(getDataForUri(tmdbUri));
     }
 
     /***
      * Get the list of top rated movies. By default, this list will only include
      * movies that have 50 or more votes. This list refreshes every day.
-     *
+     * <p/>
      * http://api.themoviedb.org/3/movie/top_rated?api_key=xxxx
+     *
      * @return Collection of TMDBContentItems
      * @throws Exception
      */
-    public ArrayList<TMDBContentItem> getMoviesTopRated() throws Exception{
+    public ArrayList<TMDBContentItem> getMoviesTopRated() throws Exception {
         Log.d(LOG_TAG, "getMoviesTopRated: Calling /movie/top_rated");
-        return parseResult(getURL(TOP_RATED_URL));
+        Uri tmdbUri = getBaseUriBuilder()
+                .appendEncodedPath(TOP_RATED_URL)
+                .build();
+        return parseResult(getDataForUri(tmdbUri));
     }
 
     /**
@@ -99,9 +113,12 @@ public class TMDBService {
      * @return Collection of TMDBContentItems
      * @throws Exception
      */
-    public ArrayList<TMDBContentItem> getMoviesNowPlaying()  throws Exception {
+    public ArrayList<TMDBContentItem> getMoviesNowPlaying() throws Exception {
         Log.d(LOG_TAG, "getMoviesNowPlaying: Calling /movie/now_playing");
-        return parseResult(getURL(NOW_PLAYING_URL));
+        Uri tmdbUri = getBaseUriBuilder()
+                .appendEncodedPath(NOW_PLAYING_URL)
+                .build();
+        return parseResult(getDataForUri(tmdbUri));
     }
 
     /**
@@ -112,7 +129,10 @@ public class TMDBService {
      */
     public ArrayList<TMDBContentItem> getMoviesUpcoming() throws Exception {
         Log.d(LOG_TAG, "getMoviesUpcoming: Calling /movie/upcoming");
-        return parseResult(getURL(UPCOMING_URL));
+        Uri tmdbUri = getBaseUriBuilder()
+                .appendEncodedPath(UPCOMING_URL)
+                .build();
+        return parseResult(getDataForUri(tmdbUri));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -124,26 +144,34 @@ public class TMDBService {
     }
 
     public static String getBackdropBaseURL() {
-       return BASE_BACKDROP_URL;
+        return BASE_BACKDROP_URL;
     }
 
     ///////////////////////////////////////////////////////////////////////////
     // PRIVATE
     ///////////////////////////////////////////////////////////////////////////
 
-    private String getURL(String relativePath) {
+    private Uri.Builder getBaseUriBuilder() {
+        // NOTE: For now, the append_to_response is located here as all
+        // calling methods are using it.  Once the service grows, it should be
+        // moved into calling methods.
+        Uri.Builder tmdbBaseUri = Uri.parse(BASE_URL).buildUpon()
+                .appendQueryParameter(API_KEY, mApiKey)
+                .appendQueryParameter(APPEND_TO_RESPONSE,ATR_SECTIONS);
+        return tmdbBaseUri;
+    }
+
+    private String getDataForUri(Uri resourceUri) {
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
         String sResult = null;
 
-        Log.d(LOG_TAG,"Staring URL connection.");
+        Log.d(LOG_TAG, "Staring URL connection.");
 
         try {
-            String sAbsoluteURL = String.format("%s/%s?%s=%s",BASE_URL,relativePath,API_KEY,mApiKey);
-            URL url = new URL(sAbsoluteURL);
+            URL url = new URL(resourceUri.toString());
             Log.d(LOG_TAG, "URL: " + url.toString());
-
-            urlConnection = (HttpURLConnection)url.openConnection();
+            urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("GET");
             urlConnection.connect();
 
