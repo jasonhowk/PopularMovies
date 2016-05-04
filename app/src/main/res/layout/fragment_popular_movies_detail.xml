@@ -32,15 +32,6 @@
                     android:background="@color/colorDetailBackground"
                     android:contentDescription="@string/content_backdrop_image"
                     android:scaleType="centerCrop"/>
-
-                <ImageView
-                    android:id="@+id/backdropPlayButton"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_centerInParent="true"
-                    android:clickable="true"
-                    android:contentDescription="Play trailer button"
-                    android:src="@android:drawable/ic_media_play"/>
             </RelativeLayout>
 
             <LinearLayout android:id="@+id/card_linear_layout"

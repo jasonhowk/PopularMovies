@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -122,22 +123,35 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
         TextView overviewTextView = (TextView) fragment.findViewById(R.id.overviewTextView);
         overviewTextView.setText(mContentItem.getOverview());
 
-        // Favorite.
-        ImageView favoriteImageView = (ImageView) fragment.findViewById(R.id.favoriteImageView);
-        favoriteImageView.setOnClickListener(new View.OnClickListener() {
+        // Trailer Button
+        ImageButton trailerImageButton = (ImageButton) fragment.findViewById(R.id.contentTrailerButton);
+        trailerImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getActivity().getApplicationContext(), "Favorite clicked.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity().getApplicationContext(), "Trailer clicked.", Toast.LENGTH_SHORT).show();
             }
         });
 
-        // Trailer
-        ImageView backdropPlayImageView = (ImageView) fragment.findViewById(R.id.backdropPlayButton);
-        backdropPlayImageView.setVisibility(View.GONE);
-        backdropPlayImageView.setOnClickListener(new View.OnClickListener() {
+        // Share Button
+        ImageButton shareImageButton = (ImageButton) fragment.findViewById(R.id.contentShareButton);
+        shareImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getActivity().getApplicationContext(), "Backdrop play button clicked.", Toast.LENGTH_SHORT).show();
+                Intent sendIntent = new Intent();
+                sendIntent.setAction(Intent.ACTION_SEND);
+                sendIntent.putExtra(Intent.EXTRA_SUBJECT, "TMDB Movie link for " + mContentItem.getTitle() + ".");
+                sendIntent.putExtra(Intent.EXTRA_TEXT, mContentItem.getItemURL());
+                sendIntent.setType("text/plain");
+                startActivity(Intent.createChooser(sendIntent, getResources().getString(R.string.shareTitle, mContentItem.getTitle())));
+            }
+        });
+
+        // Favorite Button.
+        ImageButton favoriteImageButton = (ImageButton) fragment.findViewById(R.id.contentFavoriteButton);
+        favoriteImageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getActivity().getApplicationContext(), "Favorite clicked.", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -175,7 +189,7 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
             int tpc = textColor & 0x00FFFFFF;
             // New alpha.
             float ap = (pos - (threshold - 128)) * 2;
-            int na =  (((int) ap < 0 ? 0 : (int) ap) << 24);
+            int na = (((int) ap < 0 ? 0 : (int) ap) << 24);
             // Combine color with new alpha.
             int nbc = na + bpc;
             int ntc = na + tpc;
