@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <item name="movie" type="id"/>
+
+    <!-- Sections -->
     <string name="popular">Most Popular</string>
     <string name="topRated">Top Rated</string>
     <string name="upcoming">Upcoming</string>

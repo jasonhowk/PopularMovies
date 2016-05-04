@@ -16,7 +16,7 @@ public class PopularMoviesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_popular_movies);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        // Supressing inspection as we're explicitly setting above.
+        // Suppressing inspection as we're explicitly setting above.
         //noinspection ConstantConditions
         getSupportActionBar().setDisplayShowTitleEnabled(false);
     }

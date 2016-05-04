@@ -23,7 +23,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.directv.jhowk.popularmovies.adapter.TMDBImageAdapter;
-import com.directv.jhowk.popularmovies.loader.TMDBLoader;
+import com.directv.jhowk.popularmovies.loader.TMDBSectionLoader;
 import com.directv.jhowk.popularmovies.model.TMDBContentItem;
 
 import java.util.ArrayList;
@@ -35,7 +35,7 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
     private static final String LOG_TAG = PopularMoviesActivityFragment.class.getSimpleName();
     public static final String EXTRA_CONTENT_ITEM = "com.directv.jhowk.popularMovies.model.TMDBContentItem";
     private static final String PREFERENCE_SECTION_POSITION = "com.directv.jhowk.popularMovies.preference.section.position";
-    private static final int TMDB_LOADER_ID = 1;
+    private static final int TMDB_SECTION_LOADER_ID = 1;
 
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private GridView mGridView;
@@ -108,7 +108,7 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
             configureGridListeners();
 
             // Destroy loader.
-            getLoaderManager().destroyLoader(TMDB_LOADER_ID);
+            getLoaderManager().destroyLoader(TMDB_SECTION_LOADER_ID);
 
             /**
              * Set the number of columns.  We calculate as the auto_fit param does not
@@ -148,7 +148,7 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
     @Override
     public Loader<ArrayList<TMDBContentItem>> onCreateLoader(int id, Bundle args) {
         Log.d(LOG_TAG, "onCreateLoader: Got on create loader.");
-        return new TMDBLoader(getActivity().getApplicationContext(), mSelectedSectionId);
+        return new TMDBSectionLoader(getActivity().getApplicationContext(), mSelectedSectionId);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -161,7 +161,7 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
         Log.d(LOG_TAG, "onItemSelected: selected resid:" + resId);
         if (resId > 0) {
             mSelectedSectionId = resId;
-            getLoaderManager().restartLoader(TMDB_LOADER_ID, null, this);
+            getLoaderManager().restartLoader(TMDB_SECTION_LOADER_ID, null, this);
             // We have a valid resource.  Save.
             Log.d(LOG_TAG, "onItemSelected: setting preference.");
             SharedPreferences.Editor editor = mPreferences.edit();
@@ -180,7 +180,7 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
     ///////////////////////////////////////////////////////////////////////////
     private void refresh() {
         Log.d(LOG_TAG, "refresh: Restarting loader...");
-        getLoaderManager().restartLoader(TMDB_LOADER_ID, null, this);
+        getLoaderManager().restartLoader(TMDB_SECTION_LOADER_ID, null, this);
     }
 
     private void configureGridListeners() {
