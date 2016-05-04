@@ -22,8 +22,6 @@ abstract class TMDBBaseLoader extends AsyncTaskLoader<ArrayList<TMDBContentItem>
     ///////////////////////////////////////////////////////////////////////////
     // AsyncTaskLoader Callbacks
     ///////////////////////////////////////////////////////////////////////////
-    @Override
-    abstract public ArrayList<TMDBContentItem> loadInBackground();
 
     @Override
     protected void onStartLoading() {

@@ -12,14 +12,13 @@ import com.directv.jhowk.popularmovies.service.TMDBService;
 import java.util.ArrayList;
 
 /**
- * Created by 00r5478 on 4/19/16
- * Copyright (c) 2016 DIRECTV. All rights reserved.
+ * Created by Jason Howk.
  */
-public class TMDBLoader extends TMDBBaseLoader{
-    private static final String LOG_TAG = TMDBLoader.class.getSimpleName();
+public class TMDBSectionLoader extends TMDBBaseLoader{
+    private static final String LOG_TAG = TMDBSectionLoader.class.getSimpleName();
     private final @StringRes int mResId;
 
-    public TMDBLoader(Context context, @StringRes int queryResId) {
+    public TMDBSectionLoader(Context context, @StringRes int queryResId) {
         super(context);
         mResId = queryResId;
     }
