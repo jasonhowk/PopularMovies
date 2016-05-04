@@ -36,6 +36,7 @@ public class TMDBService {
     private static final String TOP_RATED_URL = "movie/top_rated";
     private static final String NOW_PLAYING_URL = "movie/now_playing";
     private static final String UPCOMING_URL = "movie/upcoming";
+    private static final String MOVIE_URL = "movie";
 
     private static final String APPEND_TO_RESPONSE = "append_to_response";
     private static final String ATR_SECTIONS = "trailers,reviews";
@@ -84,7 +85,6 @@ public class TMDBService {
         Log.d(LOG_TAG, "getMoviesMostPopular: Calling /movie/popular");
         Uri tmdbUri = getBaseUriBuilder()
                 .appendEncodedPath(POPULAR_URL)
-                .appendQueryParameter(APPEND_TO_RESPONSE,ATR_SECTIONS)
                 .build();
         return parseResult(getDataForUri(tmdbUri));
     }
@@ -135,14 +135,40 @@ public class TMDBService {
         return parseResult(getDataForUri(tmdbUri));
     }
 
+    /**
+     * Get the basic movie information for a specific movie id.
+     * @param id The movie id.
+     * @return the TMDBContentItem of the movie.
+     * @throws JSONException if the result is unable to be parsed.
+     */
+    public TMDBContentItem getMovie(String id) throws JSONException {
+        Log.d(LOG_TAG, "getMovie: " + id);
+        Uri tmdbUri = getBaseUriBuilder()
+                .appendEncodedPath(MOVIE_URL)
+                .appendEncodedPath(id)
+                .appendQueryParameter(APPEND_TO_RESPONSE,ATR_SECTIONS)
+                .build();
+
+        String jsonResult = getDataForUri(tmdbUri);
+        return new TMDBContentItem(new JSONObject(jsonResult));
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // PUBLIC
     ///////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Get the base URL associated with a TMDB image.
+     * @return a String representing the base URL.
+     */
     public static String getImagesBaseURL() {
         return BASE_IMAGE_URL;
     }
 
+    /**
+     * Get the base URL associated with a TMDB backdrop image.
+     * @return a String representing the base URL.
+     */
     public static String getBackdropBaseURL() {
         return BASE_BACKDROP_URL;
     }
@@ -156,8 +182,7 @@ public class TMDBService {
         // calling methods are using it.  Once the service grows, it should be
         // moved into calling methods.
         Uri.Builder tmdbBaseUri = Uri.parse(BASE_URL).buildUpon()
-                .appendQueryParameter(API_KEY, mApiKey)
-                .appendQueryParameter(APPEND_TO_RESPONSE,ATR_SECTIONS);
+                .appendQueryParameter(API_KEY, mApiKey);
         return tmdbBaseUri;
     }
 
