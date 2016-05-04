@@ -178,9 +178,6 @@ public class TMDBService {
     ///////////////////////////////////////////////////////////////////////////
 
     private Uri.Builder getBaseUriBuilder() {
-        // NOTE: For now, the append_to_response is located here as all
-        // calling methods are using it.  Once the service grows, it should be
-        // moved into calling methods.
         Uri.Builder tmdbBaseUri = Uri.parse(BASE_URL).buildUpon()
                 .appendQueryParameter(API_KEY, mApiKey);
         return tmdbBaseUri;
