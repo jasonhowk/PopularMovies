@@ -38,6 +38,8 @@ public class TMDBContentItem implements Parcelable {
     private static final String VOTE_COUNT = "vote_count";
     private static final String VIDEO = "video";
     private static final String VOTE_AVERAGE = "vote_average";
+    private static final String HOMEPAGE = "homepage";
+    private static final String RUNTIME = "runtime";
     private static final String TRAILERS = "trailers";
     private static final String REVIEWS = "reviews";
 
@@ -56,6 +58,8 @@ public class TMDBContentItem implements Parcelable {
     private Long mVoteCount;
     private Boolean mVideo;
     private Float mVoteAverage;
+    private String mHomepage;
+    private Integer mRuntime;
     private HashSet<TMDBContentTrailer> mContentTrailers = new HashSet<>();
     private HashSet<TMDBContentReview> mContentReviews = new HashSet<>();
 
@@ -69,13 +73,18 @@ public class TMDBContentItem implements Parcelable {
             mOriginalLanguage = mJSONObject.getString(ORIGINAL_LANGUAGE);
             mPosterPath = mJSONObject.getString(POSTER_PATH);
             mBackdropPath = mJSONObject.getString(BACKDROP_PATH);
+            if (mBackdropPath.equalsIgnoreCase("null")) {
+                mBackdropPath = null;
+            }
             mAdult = mJSONObject.getBoolean(ADULT);
             mOverview = mJSONObject.getString(OVERVIEW);
-            mReleaseDate = dateFormat.parse(mJSONObject.getString(RELEASE_DATE),new ParsePosition(0));
+            mReleaseDate = dateFormat.parse(mJSONObject.getString(RELEASE_DATE), new ParsePosition(0));
             mPopularity = Float.parseFloat(mJSONObject.getString(POPULARITY));
             mVoteCount = mJSONObject.getLong(VOTE_COUNT);
             mVideo = mJSONObject.getBoolean(VIDEO);
             mVoteAverage = Float.parseFloat(mJSONObject.getString(VOTE_AVERAGE));
+            mHomepage = mJSONObject.optString(HOMEPAGE);
+            mRuntime = mJSONObject.optInt(RUNTIME);
             // TODO: finish genre ids.
 //             mGenreIds = mJSONObject.getJSONArray(GENRE_IDS).
 
@@ -108,7 +117,7 @@ public class TMDBContentItem implements Parcelable {
 
     @Override
     public String toString() {
-        return String.format("TMDBContentItem[Title:%s]",mTitle);
+        return String.format("TMDBContentItem[Title:%s]", mTitle);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -175,6 +184,21 @@ public class TMDBContentItem implements Parcelable {
         return mVoteAverage;
     }
 
+    public String getHomepage() {
+        return mHomepage;
+    }
+
+    public Integer getRuntime() {
+        return mRuntime;
+    }
+
+    public HashSet<TMDBContentTrailer> getContentTrailers() {
+        return mContentTrailers;
+    }
+
+    public HashSet<TMDBContentReview> getContentReviews() {
+        return mContentReviews;
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     // Instance Methods
@@ -182,10 +206,11 @@ public class TMDBContentItem implements Parcelable {
 
     /**
      * Returns a String representing the TMDB page for the item.
+     *
      * @return
      */
     public String getItemURL() {
-        return String.format("http://themoviedb.org/movie/%s",mId);
+        return String.format("http://themoviedb.org/movie/%s", mId);
     }
 
 
@@ -216,6 +241,8 @@ public class TMDBContentItem implements Parcelable {
         dest.writeValue(this.mVoteCount);
         dest.writeValue(this.mVideo);
         dest.writeValue(this.mVoteAverage);
+        dest.writeString(this.mHomepage);
+        dest.writeValue(this.mRuntime);
         dest.writeSerializable(this.mContentTrailers);
         dest.writeSerializable(this.mContentReviews);
     }
@@ -243,11 +270,13 @@ public class TMDBContentItem implements Parcelable {
         this.mVoteCount = (Long) in.readValue(Long.class.getClassLoader());
         this.mVideo = (Boolean) in.readValue(Boolean.class.getClassLoader());
         this.mVoteAverage = (Float) in.readValue(Float.class.getClassLoader());
+        this.mHomepage = in.readString();
+        this.mRuntime = (Integer) in.readValue(Integer.class.getClassLoader());
         this.mContentTrailers = (HashSet<TMDBContentTrailer>) in.readSerializable();
         this.mContentReviews = (HashSet<TMDBContentReview>) in.readSerializable();
     }
 
-    public static final Creator<TMDBContentItem> CREATOR = new Creator<TMDBContentItem>() {
+    public static final Parcelable.Creator<TMDBContentItem> CREATOR = new Parcelable.Creator<TMDBContentItem>() {
         @Override
         public TMDBContentItem createFromParcel(Parcel source) {
             return new TMDBContentItem(source);
