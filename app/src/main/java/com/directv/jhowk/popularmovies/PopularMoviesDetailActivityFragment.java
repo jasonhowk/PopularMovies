@@ -6,9 +6,14 @@ import android.content.Intent;
 import android.content.Loader;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +22,7 @@ import android.view.ViewTreeObserver;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RatingBar;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -51,80 +57,24 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        final View fragment = inflater.inflate(R.layout.fragment_popular_movies_detail, container, false);
+        final View detailView = inflater.inflate(R.layout.fragment_popular_movies_detail, container, false);
 
         Intent intent = getActivity().getIntent();
         mContentItem = intent.getParcelableExtra(PopularMoviesActivityFragment.EXTRA_CONTENT_ITEM);
 
-        mScrollView = (ScrollView) fragment.findViewById(R.id.detail_scrollview);
+        mScrollView = (ScrollView) detailView.findViewById(R.id.detail_scrollview);
         mScrollView.getViewTreeObserver().addOnScrollChangedListener(this);
-        mCardView = (CardView) fragment.findViewById(R.id.card_view);
+        mCardView = (CardView) detailView.findViewById(R.id.card_view);
 
         // Setup Loader
         getLoaderManager().initLoader(TMDB_MOVIE_LOADER_ID, null, this);
 
-        // Backdrop
-        String backdropURL = String.format("%s%s", TMDBService.getBackdropBaseURL(), mContentItem.getBackdropPath());
-        final ImageView backdropImageView = (ImageView) fragment.findViewById(R.id.backdropImageView);
-        // This little routine is to dynamically resize the backdrop to an appropriate size depending on orientation.
-        // PORTRAIT: Resize to the standard 1.777:1 (i.e. 16:9) and set card offset to 75%.
-        // LANDSCAPE: Resize to 65% of the current views height, and set card offset to 50%.
-        // The onGlobalLayout() was a tip from SO.
-        fragment.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
+        // Configure initial details.
+        configureView(detailView);
 
-                // Remove listener as we only need this to happen once.
-                fragment.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-
-                int width = getView().getMeasuredWidth();
-                Log.d(LOG_TAG, "onGlobalLayout: WIDTH:" + width);
-                int backdropImageHeight;
-                LinearLayout.LayoutParams llParams = (LinearLayout.LayoutParams) mCardView.getLayoutParams();
-                if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-                    backdropImageHeight = (int) (width / 1.777);
-                    mCardTop = (int) (backdropImageHeight * .75);
-
-                } else {
-                    backdropImageHeight = (int) (getView().getMeasuredHeight() * .65);
-                    mCardTop = (int) (backdropImageHeight * .50);
-                }
-                llParams.setMargins(30, mCardTop, 30, 0);
-                (fragment.findViewById(R.id.backdropImageView)).setLayoutParams(new RelativeLayout.LayoutParams(width, backdropImageHeight));
-
-                configureToolbar();
-            }
-        });
-        Picasso.with(getActivity().getApplicationContext()).load(backdropURL).into(backdropImageView);
-
-        // Poster
-        String imageURL = String.format("%s%s", TMDBService.getImagesBaseURL(), mContentItem.getPosterPath());
-        ImageView posterImageView = (ImageView) fragment.findViewById(R.id.posterImageView);
-        Picasso.with(getActivity().getApplicationContext()).load(imageURL).into(posterImageView);
-
-        // TITLE
-        TextView titleTextView = (TextView) fragment.findViewById(R.id.titleTextView);
-        titleTextView.setText(mContentItem.getTitle());
-
-        // Year
-        TextView yearTextView = (TextView) fragment.findViewById(R.id.yearTextView);
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy", Locale.US);
-        yearTextView.setText(simpleDateFormat.format(mContentItem.getReleaseDate()));
-
-        // Runtime
-        //TextView runtimeTextView = (TextView)fragment.findViewById(R.id.runtimeTextView);
-
-        // Rating
-        TextView ratingTextView = (TextView) fragment.findViewById(R.id.popularityTextView);
-        String rating = String.format("%s/10", mContentItem.getVoteAverage());
-        ratingTextView.setText(rating);
-
-        // Overview
-        TextView overviewTextView = (TextView) fragment.findViewById(R.id.overviewTextView);
-        overviewTextView.setText(mContentItem.getOverview());
-
-        // Trailer Button
-        ImageButton trailerImageButton = (ImageButton) fragment.findViewById(R.id.contentTrailerButton);
+        // Trailer Button.  Initially hidden, and exposed if trailers are available.
+        ImageButton trailerImageButton = (ImageButton) detailView.findViewById(R.id.contentTrailerButton);
+        trailerImageButton.setVisibility(View.GONE);
         trailerImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -133,7 +83,7 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
         });
 
         // Share Button
-        ImageButton shareImageButton = (ImageButton) fragment.findViewById(R.id.contentShareButton);
+        ImageButton shareImageButton = (ImageButton) detailView.findViewById(R.id.contentShareButton);
         shareImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -147,7 +97,7 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
         });
 
         // Favorite Button.
-        ImageButton favoriteImageButton = (ImageButton) fragment.findViewById(R.id.contentFavoriteButton);
+        ImageButton favoriteImageButton = (ImageButton) detailView.findViewById(R.id.contentFavoriteButton);
         favoriteImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -155,7 +105,7 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
             }
         });
 
-        return fragment;
+        return detailView;
     }
 
     @Override
@@ -202,6 +152,94 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
         }
     }
 
+    private void configureView(final View detailView) {
+        // Poster
+        String imageURL = String.format("%s%s", TMDBService.getImagesBaseURL(), mContentItem.getPosterPath());
+        ImageView posterImageView = (ImageView) detailView.findViewById(R.id.posterImageView);
+        Picasso.with(getActivity().getApplicationContext()).load(imageURL).into(posterImageView);
+
+        // Backdrop
+        String backdropURL = String.format("%s%s", TMDBService.getBackdropBaseURL(), mContentItem.getBackdropPath());
+        final ImageView backdropImageView = (ImageView) detailView.findViewById(R.id.backdropImageView);
+        // This little routine is to dynamically resize the backdrop to an appropriate size depending on orientation.
+        // PORTRAIT: Resize to the standard 1.777:1 (i.e. 16:9) and set card offset to 75%.
+        // LANDSCAPE: Resize to 65% of the current views height, and set card offset to 50%.
+        // The onGlobalLayout() was a tip from SO.
+        detailView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+
+                // Remove listener as we only need this to happen once.
+                detailView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+
+                int width = getView().getMeasuredWidth();
+                Log.d(LOG_TAG, "onGlobalLayout: WIDTH:" + width);
+                int backdropImageHeight;
+                LinearLayout.LayoutParams llParams = (LinearLayout.LayoutParams) mCardView.getLayoutParams();
+                if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                    backdropImageHeight = (int) (width / 1.777);
+                    mCardTop = (int) (backdropImageHeight * .75);
+
+                } else {
+                    backdropImageHeight = (int) (getView().getMeasuredHeight() * .65);
+                    mCardTop = (int) (backdropImageHeight * .50);
+                }
+                llParams.setMargins(30, mCardTop, 30, 0);
+                (detailView.findViewById(R.id.backdropImageView)).setLayoutParams(new RelativeLayout.LayoutParams(width, backdropImageHeight));
+
+                configureToolbar();
+            }
+        });
+
+        if (mContentItem.getBackdropPath() != null) {
+            Log.d(LOG_TAG, "configureView: BACKDROP:" + mContentItem.getBackdropPath());
+            Picasso.with(getActivity().getApplicationContext()).load(backdropURL).into(backdropImageView);
+        } else {
+            Log.d(LOG_TAG, "configureView: NO BACKDROP.  Using Poster");
+            Picasso.with(getActivity().getApplicationContext()).load(imageURL).into(backdropImageView);
+        }
+
+
+        // Title
+        TextView titleTextView = (TextView) detailView.findViewById(R.id.titleTextView);
+        titleTextView.setText(mContentItem.getTitle());
+
+        // Subhead
+        TextView yearTextView = (TextView) detailView.findViewById(R.id.subheadView);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy", Locale.US);
+        String subHeadFormat;
+        if (mContentItem.getRuntime() > 0) {
+            subHeadFormat = String.format("%s %d minutes", simpleDateFormat.format(mContentItem.getReleaseDate()), mContentItem.getRuntime());
+        } else {
+            subHeadFormat = String.format("%s", simpleDateFormat.format(mContentItem.getReleaseDate()));
+        }
+        yearTextView.setText(subHeadFormat);
+
+        // Rating
+        RatingBar ratingBar = (RatingBar) detailView.findViewById(R.id.ratingBar);
+        Float rating = mContentItem.getVoteAverage();
+        Log.d(LOG_TAG, "onCreateView: RATING:" + rating);
+        ratingBar.setRating(rating);
+
+        // Votes
+        TextView votesTextView = (TextView) detailView.findViewById(R.id.votesTextView);
+        String votes = String.format("%s ", mContentItem.getVoteCount());
+        Log.d(LOG_TAG, "onCreateView: VOTES:" + votes);
+        Drawable person = getResources().getDrawable(R.drawable.ic_person_black_24px);
+        person.setColorFilter(Color.argb(255, 128, 128, 128), PorterDuff.Mode.SRC_ATOP);
+        // Bounds were needed on this drawable.  An idea that came from SO.  If the bounds
+        // aren't specified the drawable won't render correctly.
+        person.setBounds(0, 0, 35, 35);
+        ImageSpan is = new ImageSpan(person, ImageSpan.ALIGN_BASELINE);
+        SpannableStringBuilder spannableStringBuilder = new SpannableStringBuilder(votes);
+        spannableStringBuilder.setSpan(is, votes.length() - 1, votes.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+        votesTextView.setText(spannableStringBuilder, TextView.BufferType.SPANNABLE);
+
+        // Overview
+        TextView overviewTextView = (TextView) detailView.findViewById(R.id.overviewTextView);
+        overviewTextView.setText(mContentItem.getOverview());
+    }
+
 
     ///////////////////////////////////////////////////////////////////////////
     // LoaderManager.LoaderCallbacks
@@ -222,6 +260,16 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
     @Override
     public void onLoadFinished(Loader<TMDBContentItem> loader, TMDBContentItem data) {
         Log.d(LOG_TAG, "onLoadFinished: DATA:" + data.toString());
+        this.mContentItem = data;
+
+        //reconfigure view with updated details.
+        configureView(this.getView());
+
+        if (mContentItem.getContentTrailers() != null && mContentItem.getContentTrailers().size() > 0) {
+            Log.d(LOG_TAG, "onLoadFinished: TRAILERS:" + mContentItem.getContentTrailers());
+            final ImageButton trailerImageButton = (ImageButton) this.getView().findViewById(R.id.contentTrailerButton);
+            trailerImageButton.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override

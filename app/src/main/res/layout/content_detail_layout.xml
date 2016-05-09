@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="match_parent">
 
     <ImageView
@@ -28,21 +28,34 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="@style/Base.TextAppearance.AppCompat.Subhead"
-        android:id="@+id/yearTextView"
+        android:id="@+id/subheadView"
         android:layout_below="@+id/titleTextView"
-        android:layout_alignStart="@+id/popularityTextView"
+        android:layout_alignStart="@+id/titleTextView"
         android:layout_marginTop="10dp"
         android:layout_alignLeft="@+id/titleTextView"/>
 
-    <TextView
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="@style/Base.TextAppearance.AppCompat.Caption"
-        android:id="@+id/popularityTextView"
         android:layout_marginTop="10dp"
-        android:layout_alignStart="@+id/titleTextView"
-        android:layout_below="@+id/yearTextView"
-        android:layout_alignLeft="@+id/titleTextView"/>
+        android:layout_below="@+id/subheadView"
+        android:layout_alignLeft="@+id/subheadView"
+        android:layout_marginLeft="-2dp">
+        <RatingBar
+            android:id="@+id/ratingBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/Widget.AppCompat.RatingBar.Small"
+            android:stepSize="0.5"
+            android:numStars="10"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/Base.TextAppearance.AppCompat.Caption"
+            android:id="@+id/votesTextView"
+            android:layout_marginLeft="10dp"/>
+    </LinearLayout>
+
 
     <TextView
         android:layout_width="fill_parent"
@@ -98,7 +111,7 @@
             android:id="@+id/contentFavoriteButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:tint="@android:color/holo_red_dark"
+            android:tint="@color/colorAccent"
             android:src="@drawable/ic_favorite_border_black_24dp"
             android:background="@android:color/transparent"
             android:adjustViewBounds="true"
