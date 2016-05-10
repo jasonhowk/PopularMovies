@@ -7,6 +7,7 @@ import android.util.Log;
 import com.directv.jhowk.popularmovies.BuildConfig;
 import com.directv.jhowk.popularmovies.R;
 import com.directv.jhowk.popularmovies.model.TMDBContentItem;
+import com.directv.jhowk.popularmovies.service.FavoriteService;
 import com.directv.jhowk.popularmovies.service.TMDBService;
 
 import java.util.ArrayList;
@@ -41,6 +42,10 @@ public class TMDBSectionLoader extends TMDBBaseLoader{
                     break;
                 case R.string.upcoming:
                     result = tmdbService.getMoviesUpcoming();
+                    break;
+                case R.string.favorites:
+                    FavoriteService favoriteService = FavoriteService.getInstance();
+                    result = favoriteService.getAllFavorites();
                     break;
             }
         } catch (Exception e) {

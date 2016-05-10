@@ -3,6 +3,7 @@ package com.directv.jhowk.popularmovies;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.LoaderManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
 import android.content.SharedPreferences;
@@ -25,6 +26,7 @@ import android.widget.Toast;
 import com.directv.jhowk.popularmovies.adapter.TMDBImageAdapter;
 import com.directv.jhowk.popularmovies.loader.TMDBSectionLoader;
 import com.directv.jhowk.popularmovies.model.TMDBContentItem;
+import com.directv.jhowk.popularmovies.service.FavoriteService;
 
 import java.util.ArrayList;
 
@@ -43,6 +45,7 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
     private ArrayList<TMDBContentItem> mContentItems;
     private TMDBImageAdapter mImageAdapter;
     private SharedPreferences mPreferences;
+    private View mPlaceholderView;
 
     private @StringRes int mSelectedSectionId;
 
@@ -159,7 +162,30 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         int resId = mSectionsArray.getResourceId(position, -1);
         Log.d(LOG_TAG, "onItemSelected: selected resid:" + resId);
-        if (resId > 0) {
+        if (resId == R.string.favorites) {
+            Log.d(LOG_TAG, "onItemSelected: Favorites selected.");
+            if (FavoriteService.getInstance().count() > 0) {
+                Log.d(LOG_TAG, "onItemSelected: Load favorites...");
+                mGridView.setVisibility(View.VISIBLE);
+            } else {
+                mGridView.setVisibility(View.GONE);
+                if (mPlaceholderView == null) {
+                    Log.d(LOG_TAG, "onItemSelected: Creating placeholder view.");
+                    LayoutInflater inflater = (LayoutInflater) this.getActivity().getApplicationContext().getSystemService
+                            (Context.LAYOUT_INFLATER_SERVICE);
+                    ViewGroup tmpParent = (ViewGroup) getView().findViewById(R.id.fragment).getParent();
+                    mPlaceholderView = inflater.inflate(R.layout.no_content, tmpParent, false);
+                    tmpParent.addView(mPlaceholderView,tmpParent.indexOfChild(mGridView));
+                } else {
+                    mPlaceholderView.setVisibility(View.VISIBLE);
+                }
+            }
+        } else if (resId > 0) {
+            if (mPlaceholderView != null) {
+                Log.d(LOG_TAG, "onItemSelected: Setting placeholder view to GONE.");
+                mPlaceholderView.setVisibility(View.GONE);
+            }
+            mGridView.setVisibility(View.VISIBLE);
             mSelectedSectionId = resId;
             getLoaderManager().restartLoader(TMDB_SECTION_LOADER_ID, null, this);
             // We have a valid resource.  Save.

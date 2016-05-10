@@ -8,11 +8,13 @@
     <string name="topRated">Top Rated</string>
     <string name="upcoming">Upcoming</string>
     <string name="nowPlaying">Now Playing</string>
+    <string name="favorites">Favorites</string>
 
     <array name="sections_rid">
         <item>@string/popular</item>
         <item>@string/topRated</item>
         <item>@string/nowPlaying</item>
         <item>@string/upcoming</item>
+        <item>@string/favorites</item>
     </array>
 </resources>
