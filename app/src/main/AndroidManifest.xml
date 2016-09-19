@@ -3,6 +3,9 @@
           xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET"/>
+    
+    <permission android:name="com.directv.jhowk.tmdbProvider.READ"/>
+    <permission android:name="com.directv.jhowk.tmdbProvider.WRITE"/>
 
     <application
         android:allowBackup="true"
@@ -29,6 +32,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.directv.jhowk.popularmovies.PopularMoviesActivity"/>
         </activity>
+        <provider
+            android:authorities="com.directv.jhowk.TMDBProvider"
+            android:name=".provider.TMDBProvider"
+            android:exported="false"/>
     </application>
 
 </manifest>

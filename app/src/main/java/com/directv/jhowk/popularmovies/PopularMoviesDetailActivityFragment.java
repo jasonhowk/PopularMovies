@@ -30,6 +30,7 @@ import android.widget.Toast;
 
 import com.directv.jhowk.popularmovies.loader.TMDBMovieLoader;
 import com.directv.jhowk.popularmovies.model.TMDBContentItem;
+import com.directv.jhowk.popularmovies.service.FavoriteService;
 import com.directv.jhowk.popularmovies.service.TMDBService;
 import com.squareup.picasso.Picasso;
 
@@ -101,7 +102,8 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
         favoriteImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getActivity().getApplicationContext(), "Favorite clicked.", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getActivity().getApplicationContext(), "Favorite clicked.", Toast.LENGTH_SHORT).show();
+                FavoriteService.getInstance(getActivity().getApplicationContext()).addFavorite(mContentItem);
             }
         });
 

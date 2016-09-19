@@ -164,7 +164,7 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
         Log.d(LOG_TAG, "onItemSelected: selected resid:" + resId);
         if (resId == R.string.favorites) {
             Log.d(LOG_TAG, "onItemSelected: Favorites selected.");
-            if (FavoriteService.getInstance().count() > 0) {
+            if (FavoriteService.getInstance(getActivity().getApplicationContext()).count() > 0) {
                 Log.d(LOG_TAG, "onItemSelected: Load favorites...");
                 mGridView.setVisibility(View.VISIBLE);
             } else {

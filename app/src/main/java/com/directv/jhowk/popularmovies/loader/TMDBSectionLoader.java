@@ -44,7 +44,7 @@ public class TMDBSectionLoader extends TMDBBaseLoader{
                     result = tmdbService.getMoviesUpcoming();
                     break;
                 case R.string.favorites:
-                    FavoriteService favoriteService = FavoriteService.getInstance();
+                    FavoriteService favoriteService = FavoriteService.getInstance(getContext());
                     result = favoriteService.getAllFavorites();
                     break;
             }
