@@ -167,10 +167,13 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
             if (FavoriteService.getInstance(getActivity().getApplicationContext()).count() > 0) {
                 Log.d(LOG_TAG, "onItemSelected: Load favorites...");
                 mGridView.setVisibility(View.VISIBLE);
+                mSelectedSectionId = resId;
+                getLoaderManager().restartLoader(TMDB_SECTION_LOADER_ID, null, this);
+
             } else {
                 mGridView.setVisibility(View.GONE);
                 if (mPlaceholderView == null) {
-                    Log.d(LOG_TAG, "onItemSelected: Creating placeholder view.");
+                    Log.d(LOG_TAG, "onItemSelected: Creating favorites placeholder view.");
                     LayoutInflater inflater = (LayoutInflater) this.getActivity().getApplicationContext().getSystemService
                             (Context.LAYOUT_INFLATER_SERVICE);
                     ViewGroup tmpParent = (ViewGroup) getView().findViewById(R.id.fragment).getParent();

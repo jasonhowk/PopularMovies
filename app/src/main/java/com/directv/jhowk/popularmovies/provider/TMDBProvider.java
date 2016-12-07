@@ -7,7 +7,9 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -17,17 +19,27 @@ import android.util.Log;
  */
 public class TMDBProvider extends ContentProvider {
     private static final String LOG_TAG = TMDBProvider.class.getSimpleName();
+
+    private static final int CONTENT = 1;
+    private static final int CONTENT_ID = 2;
+    private static final int FAVORITE = 10;
+    private static final int FAVORITE_ID = 11;
+    private static final int POPULAR = 20;
+    private static final int TOP_RATED = 21;
+    private static final int NOW_PLAYING = 22;
+    private static final int UPCOMING = 23;
     private static final UriMatcher sMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     private DbHelper mDbHelper;
 
     static {
-        sMatcher.addURI(TMDBProviderContract.AUTHORITY,"content",1);
-        sMatcher.addURI(TMDBProviderContract.AUTHORITY,"content/#", 2);
-        sMatcher.addURI(TMDBProviderContract.AUTHORITY,"favorite", 10);
-        sMatcher.addURI(TMDBProviderContract.AUTHORITY,"favorite/#",11);
-//        sMatcher.addURI(TMDBProviderContract.TMDBContent.CONTENT_URI.toString(),"/#",1);
-//        sMatcher.addURI(TMDBProviderContract.TMDBFavorite.CONTENT_URI.toString(),"",10);
-//        sMatcher.addURI(TMDBProviderContract.TMDBFavorite.CONTENT_URI.toString(),"/#",11);
+        sMatcher.addURI(TMDBProviderContract.AUTHORITY,"content",CONTENT);
+        sMatcher.addURI(TMDBProviderContract.AUTHORITY,"content/#", CONTENT_ID);
+        sMatcher.addURI(TMDBProviderContract.AUTHORITY,"favorite", FAVORITE);
+        sMatcher.addURI(TMDBProviderContract.AUTHORITY,"favorite/#",FAVORITE_ID);
+        sMatcher.addURI(TMDBProviderContract.AUTHORITY,"popular",POPULAR);
+        sMatcher.addURI(TMDBProviderContract.AUTHORITY,"topRated",TOP_RATED);
+        sMatcher.addURI(TMDBProviderContract.AUTHORITY,"nowPlaying",NOW_PLAYING);
+        sMatcher.addURI(TMDBProviderContract.AUTHORITY,"upcoming",UPCOMING);
         Log.d(LOG_TAG, "static initializer: MATCHER:" + sMatcher);
     }
 
@@ -39,21 +51,36 @@ public class TMDBProvider extends ContentProvider {
 
     @Nullable
     @Override
-    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+    public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         Log.d(LOG_TAG, "query: Query...");
         switch (sMatcher.match(uri)) {
-            case 1:
+            case CONTENT:
                 Log.d(LOG_TAG, "query: Getting Content item");
                 // Content Item.
                 break;
-            case 10:
+            case FAVORITE:
                 // All favorites.
                 Log.d(LOG_TAG, "query: Getting all favorites.");
-                mDbHelper.getReadableDatabase().execSQL("select * from tmdb_content;");
-                break;
-            case 11:
+                SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
+                queryBuilder.setTables("tmdb_favorite");
+                Cursor cursor = queryBuilder.query(mDbHelper.getReadableDatabase(),projection,selection,selectionArgs,null,null,sortOrder);
+                try {
+                    cursor.setNotificationUri(getContext().getContentResolver(), uri);
+                    return cursor;
+                } catch (NullPointerException npe) {
+                    return null;
+                }
+            case FAVORITE_ID:
                 Log.d(LOG_TAG, "query: Getting specific favorite");
                 // specific favorite
+                break;
+            case POPULAR:
+                break;
+            case TOP_RATED:
+                break;
+            case NOW_PLAYING:
+                break;
+            case UPCOMING:
                 break;
         }
         return null;
@@ -61,17 +88,17 @@ public class TMDBProvider extends ContentProvider {
 
     @Nullable
     @Override
-    public String getType(Uri uri) {
+    public String getType(@NonNull Uri uri) {
         switch (sMatcher.match(uri)) {
-            case 1:
+            case CONTENT:
                 // Content Item.
                 return TMDBProviderContract.TMDBContent.CONTENT_TYPE;
-            case 2:
+            case CONTENT_ID:
                 return TMDBProviderContract.TMDBContent.CONTENT_ITEM_TYPE;
-            case 10:
+            case FAVORITE:
                 // All favorites.
                 return TMDBProviderContract.TMDBFavorite.CONTENT_TYPE;
-            case 11:
+            case FAVORITE_ID:
                 // specific favorite
                 return TMDBProviderContract.TMDBFavorite.CONTENT_ITEM_TYPE;
             default:
@@ -79,20 +106,25 @@ public class TMDBProvider extends ContentProvider {
         }
     }
 
-    @Nullable
     @Override
-    public Uri insert(Uri uri, ContentValues values) {
+    public Uri insert(@NonNull Uri uri, ContentValues values) {
         Log.d(LOG_TAG, "insert: Inserting: " + uri + ":"  + values);
-        Long id = null;
+        Long id;
+        String table;
         switch (sMatcher.match(uri)) {
             case 1:
                 Log.d(LOG_TAG, "insert: Inserting content.");
-                id = mDbHelper.getWritableDatabase().insert(TMDBProviderContract.TMDBContent.TABLE_NAME,null,values);
+                table = TMDBProviderContract.TMDBContent.TABLE_NAME;
+                break;
             case 10:
                 Log.d(LOG_TAG, "insert: Inserting favorite");
-                id = mDbHelper.getWritableDatabase().insert(TMDBProviderContract.TMDBFavorite.TABLE_NAME,null,values);
+                table = TMDBProviderContract.TMDBFavorite.TABLE_NAME;
+                break;
+            default:
+                return null;
         }
-        if (id != null) {
+        id = mDbHelper.getWritableDatabase().insert(table, null, values);
+        if (id >= 0) {
             Log.d(LOG_TAG, "inserted: ID: " + id);
             return Uri.withAppendedPath(uri, id.toString());
         } else {
@@ -101,30 +133,48 @@ public class TMDBProvider extends ContentProvider {
     }
 
     @Override
-    public int delete(Uri uri, String selection, String[] selectionArgs) {
+    public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
         Log.d(LOG_TAG, "delete: Deleting...");
         return 0;
     }
 
     @Override
-    public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+    public int update(@NonNull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         Log.d(LOG_TAG, "update: Updating...");
         return 0;
     }
 
     protected static final class DbHelper extends SQLiteOpenHelper {
-        public DbHelper(Context context) {
+        DbHelper(Context context) {
             super(context, "tmdbContentDb", null,1);
         }
 
         @Override
         public void onCreate(SQLiteDatabase db) {
             Log.d(LOG_TAG, "onCreate: Creating DB");
-            String createContentDDL = "create table tmdb_content(_ID integer primary key, " +
-                    "title text, overview text, release_date integer, backdrop_path text, poster_path text, " +
-                    "vote_average real, vote_count integer, url text);";
+            Log.d(LOG_TAG, "onCreate: creating content table.");
+            String createContentDDL = "create table tmdb_content(" +
+                    TMDBProviderContract.TMDBContent.ID + " integer primary key, " +
+                    TMDBProviderContract.TMDBContent.TITLE +" text, " +
+                    TMDBProviderContract.TMDBContent.OVERVIEW + " text, " +
+                    TMDBProviderContract.TMDBContent.RELEASE_DATE + " integer, " +
+                    TMDBProviderContract.TMDBContent.BACKDROP_PATH + " text, " +
+                    TMDBProviderContract.TMDBContent.POSTER_PATH + " text, " +
+                    TMDBProviderContract.TMDBContent.VOTE_AVERAGE + " real, " +
+                    TMDBProviderContract.TMDBContent.VOTE_COUNT + " integer, " +
+                    TMDBProviderContract.TMDBContent.URL + " text);";
             db.execSQL(createContentDDL);
-            String createFavoritesDDL = "create table tmdb_favorite(_ID integer primary key);";
+            Log.d(LOG_TAG, "onCreate: creating favorites table.");
+            String createFavoritesDDL = "create table tmdb_favorite(" +
+                    TMDBProviderContract.TMDBFavorite.ID + " integer primary key, " +
+                    TMDBProviderContract.TMDBFavorite.TITLE +" text, " +
+                    TMDBProviderContract.TMDBFavorite.OVERVIEW + " text, " +
+                    TMDBProviderContract.TMDBFavorite.RELEASE_DATE + " integer, " +
+                    TMDBProviderContract.TMDBFavorite.BACKDROP_PATH + " text, " +
+                    TMDBProviderContract.TMDBFavorite.POSTER_PATH + " text, " +
+                    TMDBProviderContract.TMDBFavorite.VOTE_AVERAGE + " real, " +
+                    TMDBProviderContract.TMDBFavorite.VOTE_COUNT + " integer, " +
+                    TMDBProviderContract.TMDBFavorite.URL + " text);";
             db.execSQL(createFavoritesDDL);
         }
 

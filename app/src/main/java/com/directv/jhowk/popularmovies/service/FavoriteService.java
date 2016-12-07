@@ -1,6 +1,5 @@
 package com.directv.jhowk.popularmovies.service;
 
-import android.content.ContentProviderOperation;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -39,7 +38,24 @@ public class FavoriteService {
      * @return the total number of items.
      */
     public int count() {
-        return 0;
+        Log.d(LOG_TAG, "count");
+        String[] mProjection = {
+                TMDBProviderContract.TMDBFavorite.ID
+        };
+
+        Cursor mCursor = mContext.getContentResolver().query(
+                Uri.withAppendedPath(TMDBProviderContract.AUTHORITY_URI,"favorite"),
+                mProjection,
+                null,
+                null,
+                null);
+        if (mCursor == null) {
+            Log.d(LOG_TAG, "count: Zero");
+            return 0;
+        } else {
+            Log.d(LOG_TAG, "count: " + mCursor.getCount());
+            return mCursor.getCount();
+        }
     }
 
     /**
@@ -51,11 +67,70 @@ public class FavoriteService {
         if (this.count() == 0) {
             return null;
         } else {
-            // TODO: Finish.
-            return null;
-        }
+            String[] mProjection = {
+                    TMDBProviderContract.TMDBFavorite.ID,
+                    TMDBProviderContract.TMDBFavorite.TITLE,
+                    TMDBProviderContract.TMDBFavorite.OVERVIEW,
+                    TMDBProviderContract.TMDBFavorite.BACKDROP_PATH,
+                    TMDBProviderContract.TMDBFavorite.POSTER_PATH,
+                    TMDBProviderContract.TMDBFavorite.RELEASE_DATE,
+                    TMDBProviderContract.TMDBFavorite.VOTE_COUNT,
+                    TMDBProviderContract.TMDBFavorite.VOTE_AVERAGE
+            };
 
+            Cursor mCursor = mContext.getContentResolver().query(
+                    Uri.withAppendedPath(TMDBProviderContract.AUTHORITY_URI,"favorite"),
+                    mProjection,
+                    null,
+                    null,
+                    null);
+            if (mCursor == null) {
+                return null;
+            } else if (mCursor.getCount() < 1) {
+                return null;
+            } else {
+                Log.d(LOG_TAG, "getAllFavorites: Favorites existing...");
+                ArrayList<TMDBContentItem> resultList = new ArrayList<>();
+
+                while (mCursor.moveToNext()) {
+                    TMDBContentItem tmpItem = new TMDBContentItem();
+                    tmpItem.setId(mCursor.getString(mCursor.getColumnIndexOrThrow((TMDBProviderContract.TMDBFavorite.ID))));
+                    tmpItem.setTitle(mCursor.getString(mCursor.getColumnIndexOrThrow((TMDBProviderContract.TMDBFavorite.TITLE))));
+                    tmpItem.setOverview(mCursor.getString(mCursor.getColumnIndexOrThrow((TMDBProviderContract.TMDBFavorite.OVERVIEW))));
+                    //tmpItem.setReleaseDate(mCursor.getString(mCursor.getColumnIndex((TMDBProviderContract.TMDBFavorite.RELEASE_DATE))));
+                    //tmpItem.setUrl(mCursor.getString(mCursor.getColumnIndex((TMDBProviderContract.TMDBFavorite.URL))));
+                    tmpItem.setVoteAverage(mCursor.getFloat(mCursor.getColumnIndexOrThrow((TMDBProviderContract.TMDBFavorite.VOTE_AVERAGE))));
+                    tmpItem.setVoteCount(mCursor.getLong(mCursor.getColumnIndexOrThrow((TMDBProviderContract.TMDBFavorite.VOTE_COUNT))));
+                    tmpItem.setBackdropPath(mCursor.getString(mCursor.getColumnIndexOrThrow((TMDBProviderContract.TMDBFavorite.BACKDROP_PATH))));
+                    tmpItem.setPosterPath(mCursor.getString(mCursor.getColumnIndexOrThrow((TMDBProviderContract.TMDBFavorite.POSTER_PATH))));
+                    resultList.add(tmpItem);
+                }
+                mCursor.close();
+                return resultList;
+            }
+        }
     }
+
+//    public boolean isFavorite(String contentId) {
+//        String[] mProjection = {
+//                TMDBProviderContract.TMDBContent.ID
+//        };
+//
+//        Cursor mCursor = mContext.getContentResolver().query(
+//                Uri.withAppendedPath(TMDBProviderContract.AUTHORITY_URI,"favorite"),
+//                mProjection,
+//                null,
+//                null,
+//                null);
+//
+//        if (mCursor == null) {
+//            return false;
+//        } else if (mCursor.getCount() < 1) {
+//            return false;
+//        } else {
+//            return true;
+//        }
+//    }
 
     /**
      * Adds an item as a favorite.
@@ -64,40 +139,14 @@ public class FavoriteService {
     public void addFavorite(TMDBContentItem item) {
         Log.d(LOG_TAG, "addFavorite: Adding item:" + item);
 
-        ArrayList<ContentProviderOperation> ops =
-                new ArrayList<ContentProviderOperation>();
-
-        // Insert Values.
-        int insertIndex = ops.size();
-
         ContentValues contentValues = new ContentValues();
-        contentValues.put(TMDBProviderContract.TMDBContent.ID, item.getId());
-        contentValues.put(TMDBProviderContract.TMDBContent.TITLE, item.getTitle());
-        contentValues.put(TMDBProviderContract.TMDBContent.OVERVIEW, item.getOverview());
-        contentValues.put(TMDBProviderContract.TMDBContent.RELEASE_DATE, item.getReleaseDate().toString());
-        contentValues.put(TMDBProviderContract.TMDBContent.URL,item.getItemURL());
-        Uri contentInsert = mContext.getContentResolver().insert(
-                Uri.withAppendedPath(TMDBProviderContract.AUTHORITY_URI,"content"),contentValues);
-//        Uri uri = Uri.withAppendedPath(TMDBProviderContract.AUTHORITY_URI,"content");
-//        ContentProviderOperation.Builder builder = ContentProviderOperation.newInsert(uri).withValues(contentValues);
-//        ops.add(builder.build());
-
-
-//        ContentValues favoriteValues = new ContentValues();
-//        favoriteValues.put(TMDBProviderContract.TMDBContent.ID,item.getId());
-////        Uri favoriteInsert = mContext.getContentResolver().insert(
-////                Uri.withAppendedPath(TMDBProviderContract.AUTHORITY_URI,"favorite"),favoriteValues);
-//        ops.add(ContentProviderOperation.newInsert(
-//                Uri.withAppendedPath(TMDBProviderContract.AUTHORITY_URI,"favorite"))
-//                .withValues(favoriteValues)
-//                .build());
-
-//        try {
-//            mContext.getContentResolver().applyBatch(TMDBProviderContract.AUTHORITY_URI.getAuthority(), ops);
-//        } catch (Exception e) {
-//           e.printStackTrace();
-//        }
-
+        contentValues.put(TMDBProviderContract.TMDBFavorite.ID, item.getId());
+        contentValues.put(TMDBProviderContract.TMDBFavorite.TITLE, item.getTitle());
+        contentValues.put(TMDBProviderContract.TMDBFavorite.OVERVIEW, item.getOverview());
+        contentValues.put(TMDBProviderContract.TMDBFavorite.RELEASE_DATE, item.getReleaseDate().toString());
+        contentValues.put(TMDBProviderContract.TMDBFavorite.URL,item.getItemURL());
+        Uri favoriteInsert = mContext.getContentResolver().insert(
+                Uri.withAppendedPath(TMDBProviderContract.AUTHORITY_URI,"favorite"),contentValues);
     }
 
 
