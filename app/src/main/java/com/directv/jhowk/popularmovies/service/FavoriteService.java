@@ -9,6 +9,9 @@ import android.util.Log;
 import com.directv.jhowk.popularmovies.model.TMDBContentItem;
 import com.directv.jhowk.popularmovies.provider.TMDBProviderContract;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 /**
@@ -38,13 +41,13 @@ public class FavoriteService {
      * @return the total number of items.
      */
     public int count() {
-        Log.d(LOG_TAG, "count");
+        Log.d(LOG_TAG, "calculating count.");
         String[] mProjection = {
                 TMDBProviderContract.TMDBFavorite.ID
         };
 
         Cursor mCursor = mContext.getContentResolver().query(
-                Uri.withAppendedPath(TMDBProviderContract.AUTHORITY_URI,"favorite"),
+                Uri.withAppendedPath(TMDBProviderContract.CONTENT_URI,"favorite"),
                 mProjection,
                 null,
                 null,
@@ -69,17 +72,11 @@ public class FavoriteService {
         } else {
             String[] mProjection = {
                     TMDBProviderContract.TMDBFavorite.ID,
-                    TMDBProviderContract.TMDBFavorite.TITLE,
-                    TMDBProviderContract.TMDBFavorite.OVERVIEW,
-                    TMDBProviderContract.TMDBFavorite.BACKDROP_PATH,
-                    TMDBProviderContract.TMDBFavorite.POSTER_PATH,
-                    TMDBProviderContract.TMDBFavorite.RELEASE_DATE,
-                    TMDBProviderContract.TMDBFavorite.VOTE_COUNT,
-                    TMDBProviderContract.TMDBFavorite.VOTE_AVERAGE
+                    TMDBProviderContract.TMDBFavorite.JSON
             };
 
             Cursor mCursor = mContext.getContentResolver().query(
-                    Uri.withAppendedPath(TMDBProviderContract.AUTHORITY_URI,"favorite"),
+                    TMDBProviderContract.TMDBFavorite.CONTENT_URI,
                     mProjection,
                     null,
                     null,
@@ -93,17 +90,14 @@ public class FavoriteService {
                 ArrayList<TMDBContentItem> resultList = new ArrayList<>();
 
                 while (mCursor.moveToNext()) {
-                    TMDBContentItem tmpItem = new TMDBContentItem();
-                    tmpItem.setId(mCursor.getString(mCursor.getColumnIndexOrThrow((TMDBProviderContract.TMDBFavorite.ID))));
-                    tmpItem.setTitle(mCursor.getString(mCursor.getColumnIndexOrThrow((TMDBProviderContract.TMDBFavorite.TITLE))));
-                    tmpItem.setOverview(mCursor.getString(mCursor.getColumnIndexOrThrow((TMDBProviderContract.TMDBFavorite.OVERVIEW))));
-                    //tmpItem.setReleaseDate(mCursor.getString(mCursor.getColumnIndex((TMDBProviderContract.TMDBFavorite.RELEASE_DATE))));
-                    //tmpItem.setUrl(mCursor.getString(mCursor.getColumnIndex((TMDBProviderContract.TMDBFavorite.URL))));
-                    tmpItem.setVoteAverage(mCursor.getFloat(mCursor.getColumnIndexOrThrow((TMDBProviderContract.TMDBFavorite.VOTE_AVERAGE))));
-                    tmpItem.setVoteCount(mCursor.getLong(mCursor.getColumnIndexOrThrow((TMDBProviderContract.TMDBFavorite.VOTE_COUNT))));
-                    tmpItem.setBackdropPath(mCursor.getString(mCursor.getColumnIndexOrThrow((TMDBProviderContract.TMDBFavorite.BACKDROP_PATH))));
-                    tmpItem.setPosterPath(mCursor.getString(mCursor.getColumnIndexOrThrow((TMDBProviderContract.TMDBFavorite.POSTER_PATH))));
-                    resultList.add(tmpItem);
+                    TMDBContentItem tmpItem = null;
+                    try {
+                        String sJson = mCursor.getString(mCursor.getColumnIndexOrThrow((TMDBProviderContract.TMDBFavorite.JSON)));
+                        tmpItem = new TMDBContentItem(new JSONObject(sJson));
+                        resultList.add(tmpItem);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                 }
                 mCursor.close();
                 return resultList;
@@ -117,7 +111,7 @@ public class FavoriteService {
 //        };
 //
 //        Cursor mCursor = mContext.getContentResolver().query(
-//                Uri.withAppendedPath(TMDBProviderContract.AUTHORITY_URI,"favorite"),
+//                Uri.withAppendedPath(TMDBProviderContract.CONTENT_URI,"favorite"),
 //                mProjection,
 //                null,
 //                null,
@@ -141,12 +135,10 @@ public class FavoriteService {
 
         ContentValues contentValues = new ContentValues();
         contentValues.put(TMDBProviderContract.TMDBFavorite.ID, item.getId());
-        contentValues.put(TMDBProviderContract.TMDBFavorite.TITLE, item.getTitle());
-        contentValues.put(TMDBProviderContract.TMDBFavorite.OVERVIEW, item.getOverview());
-        contentValues.put(TMDBProviderContract.TMDBFavorite.RELEASE_DATE, item.getReleaseDate().toString());
-        contentValues.put(TMDBProviderContract.TMDBFavorite.URL,item.getItemURL());
+        contentValues.put(TMDBProviderContract.TMDBFavorite.JSON, item.getJSONObject().toString());
+
         Uri favoriteInsert = mContext.getContentResolver().insert(
-                Uri.withAppendedPath(TMDBProviderContract.AUTHORITY_URI,"favorite"),contentValues);
+                Uri.withAppendedPath(TMDBProviderContract.CONTENT_URI,"favorite"),contentValues);
     }
 
 

@@ -105,7 +105,7 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
     public void onLoadFinished(Loader<ArrayList<TMDBContentItem>> loader, ArrayList<TMDBContentItem> data) {
         Log.d(LOG_TAG, "onLoadFinished: Got on load finished.");
         if (data != null) {
-            Log.d(LOG_TAG, "onLoadFinished: Data received. ");
+            Log.d(LOG_TAG, "onLoadFinished: Data received: " + data);
 
             // Configure grid listeners.
             configureGridListeners();
@@ -168,6 +168,7 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
                 Log.d(LOG_TAG, "onItemSelected: Load favorites...");
                 mGridView.setVisibility(View.VISIBLE);
                 mSelectedSectionId = resId;
+                Log.d(LOG_TAG, "onItemSelected: restarting loader");
                 getLoaderManager().restartLoader(TMDB_SECTION_LOADER_ID, null, this);
 
             } else {

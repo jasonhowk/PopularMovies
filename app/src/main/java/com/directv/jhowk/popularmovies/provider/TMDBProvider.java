@@ -52,7 +52,7 @@ public class TMDBProvider extends ContentProvider {
     @Nullable
     @Override
     public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-        Log.d(LOG_TAG, "query: Query...");
+        Log.d(LOG_TAG, "query: " + uri.toString());
         switch (sMatcher.match(uri)) {
             case CONTENT:
                 Log.d(LOG_TAG, "query: Getting Content item");
@@ -167,20 +167,16 @@ public class TMDBProvider extends ContentProvider {
             Log.d(LOG_TAG, "onCreate: creating favorites table.");
             String createFavoritesDDL = "create table tmdb_favorite(" +
                     TMDBProviderContract.TMDBFavorite.ID + " integer primary key, " +
-                    TMDBProviderContract.TMDBFavorite.TITLE +" text, " +
-                    TMDBProviderContract.TMDBFavorite.OVERVIEW + " text, " +
-                    TMDBProviderContract.TMDBFavorite.RELEASE_DATE + " integer, " +
-                    TMDBProviderContract.TMDBFavorite.BACKDROP_PATH + " text, " +
-                    TMDBProviderContract.TMDBFavorite.POSTER_PATH + " text, " +
-                    TMDBProviderContract.TMDBFavorite.VOTE_AVERAGE + " real, " +
-                    TMDBProviderContract.TMDBFavorite.VOTE_COUNT + " integer, " +
-                    TMDBProviderContract.TMDBFavorite.URL + " text);";
+                    TMDBProviderContract.TMDBFavorite.JSON + " text);";
             db.execSQL(createFavoritesDDL);
         }
 
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
+            Log.d(LOG_TAG, "onUpgrade: Upgrading DB");
+            db.execSQL("DROP TABLE IF EXISTS tmdb_favorite");
+            db.execSQL("DROP TABLE IF EXISTS tmdb_content");
+            onCreate(db);
         }
     }
 

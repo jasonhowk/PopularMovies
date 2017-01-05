@@ -99,6 +99,11 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
 
         // Favorite Button.
         ImageButton favoriteImageButton = (ImageButton) detailView.findViewById(R.id.contentFavoriteButton);
+        // Check to see if favorite.
+//        if (true) {
+//            favoriteImageButton.setImageResource(R.drawable.ic_favorite_black_24dp);
+//            favoriteImageButton.setColorFilter(Color.RED);
+//        }
         favoriteImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -211,9 +216,9 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy", Locale.US);
         String subHeadFormat;
         if (mContentItem.getRuntime() > 0) {
-            subHeadFormat = String.format("%s %d minutes", simpleDateFormat.format(mContentItem.getReleaseDate()), mContentItem.getRuntime());
+            subHeadFormat = String.format(Locale.getDefault(),"%s %d minutes", simpleDateFormat.format(mContentItem.getReleaseDate()), mContentItem.getRuntime());
         } else {
-            subHeadFormat = String.format("%s", simpleDateFormat.format(mContentItem.getReleaseDate()));
+            subHeadFormat = String.format(Locale.getDefault(),"%s", simpleDateFormat.format(mContentItem.getReleaseDate()));
         }
         yearTextView.setText(subHeadFormat);
 

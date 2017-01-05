@@ -26,7 +26,7 @@ public class TMDBSectionLoader extends TMDBBaseLoader{
 
     @Override
     public ArrayList<TMDBContentItem> loadInBackground() {
-        Log.d(LOG_TAG, "loadInBackground: Attempting to load the popular results.");
+        Log.d(LOG_TAG, "loadInBackground: Attempting to load results.");
         ArrayList<TMDBContentItem> result = null;
         try {
             TMDBService tmdbService = TMDBService.get(BuildConfig.TMDB_API_KEY);
@@ -44,9 +44,10 @@ public class TMDBSectionLoader extends TMDBBaseLoader{
                     result = tmdbService.getMoviesUpcoming();
                     break;
                 case R.string.favorites:
-                    Log.d(LOG_TAG, "loadInBackground: getting favorites");
+                    Log.d(LOG_TAG, "loadInBackground: loading favorites");
                     FavoriteService favoriteService = FavoriteService.getInstance(getContext());
                     result = favoriteService.getAllFavorites();
+                    Log.d(LOG_TAG, "loadInBackground: RESULTS: " + result);
                     break;
             }
         } catch (Exception e) {

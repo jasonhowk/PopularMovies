@@ -10,6 +10,7 @@ import org.json.JSONObject;
 
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Locale;
@@ -305,7 +306,9 @@ public class TMDBContentItem implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(this.mJSONObject.toString());
+        if (this.mJSONObject != null) {
+            dest.writeString(this.mJSONObject.toString());
+        }
         dest.writeString(this.mId);
         dest.writeString(this.mTitle);
         dest.writeString(this.mOriginalTitle);
@@ -322,8 +325,8 @@ public class TMDBContentItem implements Parcelable {
         dest.writeValue(this.mVoteAverage);
         dest.writeString(this.mHomepage);
         dest.writeValue(this.mRuntime);
-        dest.writeSerializable(this.mContentTrailers);
-        dest.writeSerializable(this.mContentReviews);
+        dest.writeArray(this.mContentTrailers.toArray());
+        dest.writeArray(this.mContentReviews.toArray());
     }
 
     protected TMDBContentItem(Parcel in) {
@@ -351,8 +354,8 @@ public class TMDBContentItem implements Parcelable {
         this.mVoteAverage = (Float) in.readValue(Float.class.getClassLoader());
         this.mHomepage = in.readString();
         this.mRuntime = (Integer) in.readValue(Integer.class.getClassLoader());
-        this.mContentTrailers = (HashSet<TMDBContentTrailer>) in.readSerializable();
-        this.mContentReviews = (HashSet<TMDBContentReview>) in.readSerializable();
+        this.mContentTrailers = new HashSet(Arrays.asList(in.readArray(TMDBContentTrailer.class.getClassLoader())));
+        this.mContentReviews = new HashSet(Arrays.asList(in.readArray(TMDBContentReview.class.getClassLoader())));
     }
 
     public static final Parcelable.Creator<TMDBContentItem> CREATOR = new Parcelable.Creator<TMDBContentItem>() {
