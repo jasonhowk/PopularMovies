@@ -68,7 +68,7 @@ public class FavoriteService {
     public ArrayList<TMDBContentItem> getAllFavorites() {
         Log.d(LOG_TAG, "getAllFavorites");
         if (this.count() == 0) {
-            return null;
+            return new ArrayList<>();
         } else {
             String[] mProjection = {
                     TMDBProviderContract.TMDBFavorite.ID,
@@ -90,7 +90,7 @@ public class FavoriteService {
                 ArrayList<TMDBContentItem> resultList = new ArrayList<>();
 
                 while (mCursor.moveToNext()) {
-                    TMDBContentItem tmpItem = null;
+                    TMDBContentItem tmpItem;
                     try {
                         String sJson = mCursor.getString(mCursor.getColumnIndexOrThrow((TMDBProviderContract.TMDBFavorite.JSON)));
                         tmpItem = new TMDBContentItem(new JSONObject(sJson));
@@ -105,26 +105,29 @@ public class FavoriteService {
         }
     }
 
-//    public boolean isFavorite(String contentId) {
-//        String[] mProjection = {
-//                TMDBProviderContract.TMDBContent.ID
-//        };
-//
-//        Cursor mCursor = mContext.getContentResolver().query(
-//                Uri.withAppendedPath(TMDBProviderContract.CONTENT_URI,"favorite"),
-//                mProjection,
-//                null,
-//                null,
-//                null);
-//
-//        if (mCursor == null) {
-//            return false;
-//        } else if (mCursor.getCount() < 1) {
-//            return false;
-//        } else {
-//            return true;
-//        }
-//    }
+    public boolean isFavorite(String contentId) {
+        Log.d(LOG_TAG, "isFavorite: " + contentId);
+        String[] mProjection = {
+                TMDBProviderContract.TMDBFavorite.ID
+        };
+
+        String[] mSelectionArgs = {contentId};
+
+        Cursor mCursor = mContext.getContentResolver().query(
+                TMDBProviderContract.TMDBFavorite.CONTENT_URI,
+                mProjection,
+                TMDBProviderContract.TMDBFavorite.ID + " = ?",
+                mSelectionArgs,
+                null);
+
+        if (mCursor == null) {
+            return false;
+        } else if (mCursor.getCount() < 1) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 
     /**
      * Adds an item as a favorite.
@@ -137,8 +140,17 @@ public class FavoriteService {
         contentValues.put(TMDBProviderContract.TMDBFavorite.ID, item.getId());
         contentValues.put(TMDBProviderContract.TMDBFavorite.JSON, item.getJSONObject().toString());
 
-        Uri favoriteInsert = mContext.getContentResolver().insert(
-                Uri.withAppendedPath(TMDBProviderContract.CONTENT_URI,"favorite"),contentValues);
+        Uri favoriteInsert = mContext.getContentResolver().insert(TMDBProviderContract.TMDBFavorite.CONTENT_URI,contentValues);
+    }
+
+
+    public void removeFavorite(TMDBContentItem item) {
+        Log.d(LOG_TAG, "removeFavorite: Removing item:" + item);
+        String[]  mSelectionArgs = {item.getId()};
+        mContext.getContentResolver().delete(
+                TMDBProviderContract.TMDBFavorite.CONTENT_URI,
+                TMDBProviderContract.TMDBFavorite._ID + " = ?",
+                mSelectionArgs);
     }
 
 

@@ -53,6 +53,7 @@ public class TMDBProvider extends ContentProvider {
     @Override
     public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         Log.d(LOG_TAG, "query: " + uri.toString());
+        SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
         switch (sMatcher.match(uri)) {
             case CONTENT:
                 Log.d(LOG_TAG, "query: Getting Content item");
@@ -61,12 +62,11 @@ public class TMDBProvider extends ContentProvider {
             case FAVORITE:
                 // All favorites.
                 Log.d(LOG_TAG, "query: Getting all favorites.");
-                SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
                 queryBuilder.setTables("tmdb_favorite");
-                Cursor cursor = queryBuilder.query(mDbHelper.getReadableDatabase(),projection,selection,selectionArgs,null,null,sortOrder);
+                Cursor fCursor = queryBuilder.query(mDbHelper.getReadableDatabase(),projection,selection,selectionArgs,null,null,sortOrder);
                 try {
-                    cursor.setNotificationUri(getContext().getContentResolver(), uri);
-                    return cursor;
+                    fCursor.setNotificationUri(getContext().getContentResolver(), uri);
+                    return fCursor;
                 } catch (NullPointerException npe) {
                     return null;
                 }
@@ -135,7 +135,27 @@ public class TMDBProvider extends ContentProvider {
     @Override
     public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
         Log.d(LOG_TAG, "delete: Deleting...");
-        return 0;
+        Log.d(LOG_TAG, "insert: deleting: " + uri );
+        String table;
+        switch (sMatcher.match(uri)) {
+            case 1:
+                Log.d(LOG_TAG, "delete: Deleting content.");
+                table = TMDBProviderContract.TMDBContent.TABLE_NAME;
+                break;
+            case 10:
+                Log.d(LOG_TAG, "delete: Deleting favorite");
+                table = TMDBProviderContract.TMDBFavorite.TABLE_NAME;
+                break;
+            default:
+                return 0;
+        }
+        int count = mDbHelper.getWritableDatabase().delete(table,selection,selectionArgs);
+        if (count >= 0) {
+            Log.d(LOG_TAG, "delete: removed " + count + " rows.");
+            return count;
+        } else {
+            return 0;
+        }
     }
 
     @Override

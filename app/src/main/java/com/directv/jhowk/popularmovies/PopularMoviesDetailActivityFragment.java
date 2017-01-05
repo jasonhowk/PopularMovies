@@ -51,6 +51,7 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
     private Toolbar mToolbar;
     private CardView mCardView;
     private int mCardTop;
+    private FavoriteService mFavoriteService;
 
     public PopularMoviesDetailActivityFragment() {
     }
@@ -59,6 +60,8 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         final View detailView = inflater.inflate(R.layout.fragment_popular_movies_detail, container, false);
+
+        mFavoriteService = FavoriteService.getInstance(getActivity().getApplicationContext());
 
         Intent intent = getActivity().getIntent();
         mContentItem = intent.getParcelableExtra(PopularMoviesActivityFragment.EXTRA_CONTENT_ITEM);
@@ -100,15 +103,24 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
         // Favorite Button.
         ImageButton favoriteImageButton = (ImageButton) detailView.findViewById(R.id.contentFavoriteButton);
         // Check to see if favorite.
-//        if (true) {
-//            favoriteImageButton.setImageResource(R.drawable.ic_favorite_black_24dp);
-//            favoriteImageButton.setColorFilter(Color.RED);
-//        }
+        if (mFavoriteService.isFavorite(mContentItem.getId())) {
+            favoriteImageButton.setImageResource(R.drawable.ic_favorite_black_24dp);
+            favoriteImageButton.setColorFilter(Color.RED);
+        }
+
         favoriteImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Toast.makeText(getActivity().getApplicationContext(), "Favorite clicked.", Toast.LENGTH_SHORT).show();
-                FavoriteService.getInstance(getActivity().getApplicationContext()).addFavorite(mContentItem);
+                ImageButton favoriteImageButton = (ImageButton) detailView.findViewById(R.id.contentFavoriteButton);
+                if (mFavoriteService.isFavorite(mContentItem.getId())) {
+                    mFavoriteService.removeFavorite(mContentItem);
+                    favoriteImageButton.setImageResource(R.drawable.ic_favorite_border_black_24dp);
+                    favoriteImageButton.setColorFilter(Color.RED);
+                } else {
+                    mFavoriteService.addFavorite(mContentItem);
+                    favoriteImageButton.setImageResource(R.drawable.ic_favorite_black_24dp);
+                    favoriteImageButton.setColorFilter(Color.RED);
+                }
             }
         });
 
