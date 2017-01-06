@@ -97,6 +97,21 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
         mSectionsArray.recycle();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        // NOTE: The extra guard is to prevent this from running twice if the
+        // favorites are the initial section.  Otherwise if we have data and we
+        // resume back to favorites, we're going to reload to verify any changes.
+        Spinner spinner = (Spinner) getActivity().findViewById(R.id.nav_spinner);
+        if (spinner.getSelectedItem().equals("Favorites") && mContentItems != null) {
+            Log.d(LOG_TAG, "onResume: Favorites selected.");
+            restartLoader();
+        }
+    }
+
+
+
     ///////////////////////////////////////////////////////////////////////////
     // LoaderManager.LoaderCallbacks
     ///////////////////////////////////////////////////////////////////////////
@@ -106,52 +121,8 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
         Log.d(LOG_TAG, "onLoadFinished: Got on load finished.");
         if (data != null) {
             Log.d(LOG_TAG, "onLoadFinished: Data received: " + data);
-
-            if (data.size() == 0) {
-                mGridView.setVisibility(View.GONE);
-                if (mPlaceholderView == null) {
-                    Log.d(LOG_TAG, "onItemSelected: Creating favorites placeholder view.");
-                    LayoutInflater inflater = (LayoutInflater) this.getActivity().getApplicationContext().getSystemService
-                            (Context.LAYOUT_INFLATER_SERVICE);
-                    ViewGroup tmpParent = (ViewGroup) getView().findViewById(R.id.fragment).getParent();
-                    mPlaceholderView = inflater.inflate(R.layout.no_content, tmpParent, false);
-                    tmpParent.addView(mPlaceholderView,tmpParent.indexOfChild(mGridView));
-                } else {
-                    mPlaceholderView.setVisibility(View.VISIBLE);
-                }
-                return;
-            }
-
-            // Configure grid listeners.
-            configureGridListeners();
-
-            // Destroy loader.
-            getLoaderManager().destroyLoader(TMDB_SECTION_LOADER_ID);
-
-            /**
-             * Set the number of columns.  We calculate as the auto_fit param does not
-             * work without a defined column width.  However, to roughly estimate a
-             * comfortable number of column, a rudimentary algorithm was created that
-             * calculates the number of colums directly based on the actual display width
-             * and the density. i.e.
-             *      Math.floor(getView().getWidth() / displayMetrics.densityDpi)
-             */
-            if (getView() != null) {
-                DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
-                Log.d(LOG_TAG, "onLoadFinished: DENSITY DPI: " + displayMetrics.densityDpi);
-                Log.d(LOG_TAG, "onLoadFinished: WIDTH: " + getView().getWidth());
-                double maxPosters = Math.floor(getView().getWidth() / displayMetrics.densityDpi);
-                Log.d(LOG_TAG, "onLoadFinished: MAX POSTERS:" + maxPosters);
-                mGridView.setNumColumns((int) maxPosters);
-            }
             mContentItems = data;
-            if (mImageAdapter == null) {
-                mImageAdapter = new TMDBImageAdapter(this.getActivity().getApplicationContext(), mContentItems);
-                mGridView.setAdapter(mImageAdapter);
-            } else {
-                mImageAdapter.setContentItems(mContentItems);
-            }
-
+            refreshContent(mContentItems);
         } else {
             Toast.makeText(getActivity().getApplicationContext(), "Unable to download data.  Please try again.", Toast.LENGTH_SHORT).show();
         }
@@ -176,43 +147,26 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         int resId = mSectionsArray.getResourceId(position, -1);
+        mSelectedSectionId = resId;
         Log.d(LOG_TAG, "onItemSelected: selected resid:" + resId);
         if (resId == R.string.favorites) {
-            Log.d(LOG_TAG, "onItemSelected: Favorites selected.");
             if (FavoriteService.getInstance(getActivity().getApplicationContext()).count() > 0) {
-                Log.d(LOG_TAG, "onItemSelected: Load favorites...");
-                mGridView.setVisibility(View.VISIBLE);
-                mSelectedSectionId = resId;
-                Log.d(LOG_TAG, "onItemSelected: restarting loader");
-                getLoaderManager().restartLoader(TMDB_SECTION_LOADER_ID, null, this);
-
+                displayPlaceHolder(false);
             } else {
-                mGridView.setVisibility(View.GONE);
-                if (mPlaceholderView == null) {
-                    Log.d(LOG_TAG, "onItemSelected: Creating favorites placeholder view.");
-                    LayoutInflater inflater = (LayoutInflater) this.getActivity().getApplicationContext().getSystemService
-                            (Context.LAYOUT_INFLATER_SERVICE);
-                    ViewGroup tmpParent = (ViewGroup) getView().findViewById(R.id.fragment).getParent();
-                    mPlaceholderView = inflater.inflate(R.layout.no_content, tmpParent, false);
-                    tmpParent.addView(mPlaceholderView,tmpParent.indexOfChild(mGridView));
-                } else {
-                    mPlaceholderView.setVisibility(View.VISIBLE);
-                }
+                // No favorites...
+                displayPlaceHolder(true);
             }
         } else if (resId > 0) {
-            if (mPlaceholderView != null) {
-                Log.d(LOG_TAG, "onItemSelected: Setting placeholder view to GONE.");
-                mPlaceholderView.setVisibility(View.GONE);
-            }
-            mGridView.setVisibility(View.VISIBLE);
-            mSelectedSectionId = resId;
-            getLoaderManager().restartLoader(TMDB_SECTION_LOADER_ID, null, this);
-            // We have a valid resource.  Save.
-            Log.d(LOG_TAG, "onItemSelected: setting preference.");
-            SharedPreferences.Editor editor = mPreferences.edit();
-            editor.putInt(PREFERENCE_SECTION_POSITION, position);
-            editor.apply();
+            displayPlaceHolder(false);
         }
+        // Kick off loader to grab data.
+        restartLoader();
+
+        // Save selection to preferences.
+        Log.d(LOG_TAG, "onItemSelected: setting preference.");
+        SharedPreferences.Editor editor = mPreferences.edit();
+        editor.putInt(PREFERENCE_SECTION_POSITION, position);
+        editor.apply();
     }
 
     @Override
@@ -223,8 +177,8 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
     ///////////////////////////////////////////////////////////////////////////
     // Private Methods
     ///////////////////////////////////////////////////////////////////////////
-    private void refresh() {
-        Log.d(LOG_TAG, "refresh: Restarting loader...");
+    private void restartLoader() {
+        Log.d(LOG_TAG, "restartLoader: Restarting loader...");
         getLoaderManager().restartLoader(TMDB_SECTION_LOADER_ID, null, this);
     }
 
@@ -234,7 +188,7 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
             @Override
             public void onRefresh() {
                 Log.d(LOG_TAG, "onRefresh: Refreshing data.");
-                refresh();
+                restartLoader();
             }
         });
 
@@ -248,5 +202,65 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
                 startActivity(intent);
             }
         });
+    }
+
+    private void refreshContent(ArrayList<TMDBContentItem> content) {
+        mContentItems = content;
+
+        if (mContentItems.size() == 0) {
+            displayPlaceHolder(true);
+        } else {
+            displayPlaceHolder(false);
+        }
+
+        // Configure grid listeners.
+        configureGridListeners();
+
+        // Destroy loader.
+        getLoaderManager().destroyLoader(TMDB_SECTION_LOADER_ID);
+
+        /**
+         * Set the number of columns.  We calculate as the auto_fit param does not
+         * work without a defined column width.  However, to roughly estimate a
+         * comfortable number of column, a rudimentary algorithm was created that
+         * calculates the number of colums directly based on the actual display width
+         * and the density. i.e.
+         *      Math.floor(getView().getWidth() / displayMetrics.densityDpi)
+         */
+        if (getView() != null) {
+            DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+            Log.d(LOG_TAG, "onLoadFinished: DENSITY DPI: " + displayMetrics.densityDpi);
+            Log.d(LOG_TAG, "onLoadFinished: WIDTH: " + getView().getWidth());
+            double maxPosters = Math.floor(getView().getWidth() / displayMetrics.densityDpi);
+            Log.d(LOG_TAG, "onLoadFinished: MAX POSTERS:" + maxPosters);
+            mGridView.setNumColumns((int) maxPosters);
+        }
+
+        if (mImageAdapter == null) {
+            mImageAdapter = new TMDBImageAdapter(this.getActivity().getApplicationContext(), mContentItems);
+            mGridView.setAdapter(mImageAdapter);
+        } else {
+            mImageAdapter.setContentItems(mContentItems);
+        }
+    }
+
+    private void displayPlaceHolder(boolean display) {
+        if (display) {
+            mGridView.setVisibility(View.GONE);
+            if (mPlaceholderView == null) {
+                LayoutInflater inflater = (LayoutInflater) this.getActivity().getApplicationContext().getSystemService
+                        (Context.LAYOUT_INFLATER_SERVICE);
+                ViewGroup tmpParent = (ViewGroup) getView().findViewById(R.id.fragment).getParent();
+                mPlaceholderView = inflater.inflate(R.layout.no_content, tmpParent, false);
+                tmpParent.addView(mPlaceholderView,tmpParent.indexOfChild(mGridView));
+            } else {
+                mPlaceholderView.setVisibility(View.VISIBLE);
+            }
+        } else {
+            if (mPlaceholderView != null) {
+                mPlaceholderView.setVisibility(View.GONE);
+            }
+            mGridView.setVisibility(View.VISIBLE);
+        }
     }
 }

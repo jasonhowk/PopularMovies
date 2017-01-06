@@ -2,7 +2,6 @@ package com.directv.jhowk.popularmovies.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -96,7 +95,7 @@ public class TMDBContentItem implements Parcelable {
                 if (trailers != null) {
                     for (int i = 0; i < trailers.length(); i++) {
                         TMDBContentTrailer tmpTrailer = new TMDBContentTrailer(trailers.getJSONObject(i));
-                        Log.d(LOG_TAG, "TMDBContentItem: TRAILER: " + tmpTrailer);
+                        //Log.d(LOG_TAG, "TMDBContentItem: TRAILER: " + tmpTrailer);
                         mContentTrailers.add(tmpTrailer);
                     }
                 }
@@ -107,7 +106,7 @@ public class TMDBContentItem implements Parcelable {
                 if (reviews != null) {
                     for (int i = 0; i < reviews.length(); i++) {
                         TMDBContentReview tmpReview = new TMDBContentReview(reviews.getJSONObject(i));
-                        Log.d(LOG_TAG, "TMDBContentItem: REVIEW: " + tmpReview);
+                        //Log.d(LOG_TAG, "TMDBContentItem: REVIEW: " + tmpReview);
                         mContentReviews.add(tmpReview);
                     }
                 }

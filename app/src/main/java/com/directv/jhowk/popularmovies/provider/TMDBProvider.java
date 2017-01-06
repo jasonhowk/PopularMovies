@@ -56,12 +56,9 @@ public class TMDBProvider extends ContentProvider {
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
         switch (sMatcher.match(uri)) {
             case CONTENT:
-                Log.d(LOG_TAG, "query: Getting Content item");
-                // Content Item.
                 break;
             case FAVORITE:
                 // All favorites.
-                Log.d(LOG_TAG, "query: Getting all favorites.");
                 queryBuilder.setTables("tmdb_favorite");
                 Cursor fCursor = queryBuilder.query(mDbHelper.getReadableDatabase(),projection,selection,selectionArgs,null,null,sortOrder);
                 try {
@@ -71,8 +68,6 @@ public class TMDBProvider extends ContentProvider {
                     return null;
                 }
             case FAVORITE_ID:
-                Log.d(LOG_TAG, "query: Getting specific favorite");
-                // specific favorite
                 break;
             case POPULAR:
                 break;
@@ -134,8 +129,7 @@ public class TMDBProvider extends ContentProvider {
 
     @Override
     public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
-        Log.d(LOG_TAG, "delete: Deleting...");
-        Log.d(LOG_TAG, "insert: deleting: " + uri );
+        Log.d(LOG_TAG, "delete: Deleting..." + uri);
         String table;
         switch (sMatcher.match(uri)) {
             case 1:

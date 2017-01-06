@@ -1,9 +1,9 @@
 package com.directv.jhowk.popularmovies.service;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.net.Uri;
 import android.util.Log;
 
 import com.directv.jhowk.popularmovies.model.TMDBContentItem;
@@ -13,6 +13,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 /**
  * Created by 00r5478 on 5/9/16
@@ -20,20 +21,25 @@ import java.util.ArrayList;
  */
 public class FavoriteService {
     private static final String LOG_TAG = FavoriteService.class.getSimpleName();
+    @SuppressLint("StaticFieldLeak") // this doesn't leak because we're grabbing the application context.
     private static FavoriteService sFavoriteService;
     private Context mContext;
-    private Cursor mCursor;
+
+    private Integer mCachedCount = 0;
+    private Hashtable<String,TMDBContentItem> mCachedItems = null;
+
+    private FavoriteService(Context context) {
+        Log.d(LOG_TAG, "FavoriteService: Creating instance.");
+        mContext = context;
+        updateCache();
+    }
 
     public static FavoriteService getInstance(Context context) {
         if (sFavoriteService == null) {
-            sFavoriteService = new FavoriteService(context);
+            sFavoriteService = new FavoriteService(context.getApplicationContext());
+
         }
         return sFavoriteService;
-    }
-
-    public FavoriteService(Context context) {
-        Log.d(LOG_TAG, "FavoriteService: Creating instance.");
-        mContext = context;
     }
 
     /**
@@ -41,24 +47,7 @@ public class FavoriteService {
      * @return the total number of items.
      */
     public int count() {
-        Log.d(LOG_TAG, "calculating count.");
-        String[] mProjection = {
-                TMDBProviderContract.TMDBFavorite.ID
-        };
-
-        Cursor mCursor = mContext.getContentResolver().query(
-                Uri.withAppendedPath(TMDBProviderContract.CONTENT_URI,"favorite"),
-                mProjection,
-                null,
-                null,
-                null);
-        if (mCursor == null) {
-            Log.d(LOG_TAG, "count: Zero");
-            return 0;
-        } else {
-            Log.d(LOG_TAG, "count: " + mCursor.getCount());
-            return mCursor.getCount();
-        }
+        return mCachedCount;
     }
 
     /**
@@ -66,66 +55,14 @@ public class FavoriteService {
      * @return all favorites.
      */
     public ArrayList<TMDBContentItem> getAllFavorites() {
-        Log.d(LOG_TAG, "getAllFavorites");
-        if (this.count() == 0) {
-            return new ArrayList<>();
-        } else {
-            String[] mProjection = {
-                    TMDBProviderContract.TMDBFavorite.ID,
-                    TMDBProviderContract.TMDBFavorite.JSON
-            };
-
-            Cursor mCursor = mContext.getContentResolver().query(
-                    TMDBProviderContract.TMDBFavorite.CONTENT_URI,
-                    mProjection,
-                    null,
-                    null,
-                    null);
-            if (mCursor == null) {
-                return null;
-            } else if (mCursor.getCount() < 1) {
-                return null;
-            } else {
-                Log.d(LOG_TAG, "getAllFavorites: Favorites existing...");
-                ArrayList<TMDBContentItem> resultList = new ArrayList<>();
-
-                while (mCursor.moveToNext()) {
-                    TMDBContentItem tmpItem;
-                    try {
-                        String sJson = mCursor.getString(mCursor.getColumnIndexOrThrow((TMDBProviderContract.TMDBFavorite.JSON)));
-                        tmpItem = new TMDBContentItem(new JSONObject(sJson));
-                        resultList.add(tmpItem);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-                mCursor.close();
-                return resultList;
-            }
-        }
+        return new ArrayList<>(mCachedItems.values());
     }
 
     public boolean isFavorite(String contentId) {
-        Log.d(LOG_TAG, "isFavorite: " + contentId);
-        String[] mProjection = {
-                TMDBProviderContract.TMDBFavorite.ID
-        };
-
-        String[] mSelectionArgs = {contentId};
-
-        Cursor mCursor = mContext.getContentResolver().query(
-                TMDBProviderContract.TMDBFavorite.CONTENT_URI,
-                mProjection,
-                TMDBProviderContract.TMDBFavorite.ID + " = ?",
-                mSelectionArgs,
-                null);
-
-        if (mCursor == null) {
-            return false;
-        } else if (mCursor.getCount() < 1) {
-            return false;
-        } else {
+        if (mCachedItems.containsKey(contentId)) {
             return true;
+        } else {
+            return false;
         }
     }
 
@@ -135,14 +72,13 @@ public class FavoriteService {
      */
     public void addFavorite(TMDBContentItem item) {
         Log.d(LOG_TAG, "addFavorite: Adding item:" + item);
-
         ContentValues contentValues = new ContentValues();
         contentValues.put(TMDBProviderContract.TMDBFavorite.ID, item.getId());
         contentValues.put(TMDBProviderContract.TMDBFavorite.JSON, item.getJSONObject().toString());
+        mContext.getContentResolver().insert(TMDBProviderContract.TMDBFavorite.CONTENT_URI,contentValues);
 
-        Uri favoriteInsert = mContext.getContentResolver().insert(TMDBProviderContract.TMDBFavorite.CONTENT_URI,contentValues);
+        updateCache();
     }
-
 
     public void removeFavorite(TMDBContentItem item) {
         Log.d(LOG_TAG, "removeFavorite: Removing item:" + item);
@@ -151,6 +87,49 @@ public class FavoriteService {
                 TMDBProviderContract.TMDBFavorite.CONTENT_URI,
                 TMDBProviderContract.TMDBFavorite._ID + " = ?",
                 mSelectionArgs);
+
+        updateCache();
+    }
+
+    private void updateCache() {
+        Log.d(LOG_TAG, "updateCache: Updating cache.");
+        String[] mProjection = {
+                TMDBProviderContract.TMDBFavorite.ID,
+                TMDBProviderContract.TMDBFavorite.JSON
+        };
+
+        Cursor mCursor = mContext.getContentResolver().query(
+                TMDBProviderContract.TMDBFavorite.CONTENT_URI,
+                mProjection,
+                null,
+                null,
+                null);
+        if (mCursor == null) {
+            mCachedCount = null;
+            mCachedItems = null;
+        } else if (mCursor.getCount() < 1) {
+            mCachedCount = 0;
+            mCachedItems = new Hashtable<>();
+        } else {
+            Hashtable<String,TMDBContentItem> tmpHashTable = new Hashtable<>();
+
+            while (mCursor.moveToNext()) {
+                TMDBContentItem tmpItem;
+                try {
+                    String sJson = mCursor.getString(mCursor.getColumnIndexOrThrow((TMDBProviderContract.TMDBFavorite.JSON)));
+                    tmpItem = new TMDBContentItem(new JSONObject(sJson));
+                    tmpHashTable.put(tmpItem.getId(),tmpItem);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+            mCursor.close();
+
+            mCachedItems = tmpHashTable;
+            mCachedCount = mCachedItems.size();
+        }
+        Log.d(LOG_TAG, "updateCache: Cached Items:" + mCachedItems);
+        Log.d(LOG_TAG, "updateCache: Cached Count:" + mCachedCount);
     }
 
 

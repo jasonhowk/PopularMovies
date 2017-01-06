@@ -27,7 +27,7 @@ abstract class TMDBBaseLoader extends AsyncTaskLoader<ArrayList<TMDBContentItem>
     protected void onStartLoading() {
         super.onStartLoading();
         Log.d(LOG_TAG, "onStartLoading: On start loading...");
-        Log.d(LOG_TAG, "onStartLoading: mcontentItems:" + mContentItems);
+        Log.d(LOG_TAG, "onStartLoading: mContentItems: " + mContentItems);
         if (mContentItems != null) {
             Log.d(LOG_TAG, "onStartLoading: Returning cached results.");
             deliverResult(mContentItems);
