@@ -127,6 +127,7 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
             Toast.makeText(getActivity().getApplicationContext(), "Unable to download data.  Please try again.", Toast.LENGTH_SHORT).show();
         }
         mSwipeRefreshLayout.setRefreshing(false);
+        //mGridView.setSelection(0);
     }
 
     @Override
@@ -159,6 +160,7 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
         } else if (resId > 0) {
             displayPlaceHolder(false);
         }
+
         // Kick off loader to grab data.
         restartLoader();
 
@@ -219,6 +221,13 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
         // Destroy loader.
         getLoaderManager().destroyLoader(TMDB_SECTION_LOADER_ID);
 
+        // Image adaptor
+        if (mImageAdapter != null) {
+            mImageAdapter.notifyDataSetInvalidated();
+        }
+        mImageAdapter = new TMDBImageAdapter(this.getActivity().getApplicationContext(), mContentItems);
+        mGridView.setAdapter(mImageAdapter);
+
         /**
          * Set the number of columns.  We calculate as the auto_fit param does not
          * work without a defined column width.  However, to roughly estimate a
@@ -236,12 +245,6 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
             mGridView.setNumColumns((int) maxPosters);
         }
 
-        if (mImageAdapter == null) {
-            mImageAdapter = new TMDBImageAdapter(this.getActivity().getApplicationContext(), mContentItems);
-            mGridView.setAdapter(mImageAdapter);
-        } else {
-            mImageAdapter.setContentItems(mContentItems);
-        }
     }
 
     private void displayPlaceHolder(boolean display) {
