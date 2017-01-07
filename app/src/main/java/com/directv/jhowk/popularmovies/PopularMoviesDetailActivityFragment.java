@@ -50,8 +50,10 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
     private ScrollView mScrollView;
     private Toolbar mToolbar;
     private CardView mCardView;
+    private View mDetailView;
     private int mCardTop;
     private FavoriteService mFavoriteService;
+    private Picasso mPicasso;
 
     public PopularMoviesDetailActivityFragment() {
     }
@@ -59,25 +61,30 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        final View detailView = inflater.inflate(R.layout.fragment_popular_movies_detail, container, false);
+        mDetailView = inflater.inflate(R.layout.fragment_popular_movies_detail, container, false);
 
         mFavoriteService = FavoriteService.getInstance(getActivity().getApplicationContext());
 
         Intent intent = getActivity().getIntent();
         mContentItem = intent.getParcelableExtra(PopularMoviesActivityFragment.EXTRA_CONTENT_ITEM);
 
-        mScrollView = (ScrollView) detailView.findViewById(R.id.detail_scrollview);
+        mScrollView = (ScrollView) mDetailView.findViewById(R.id.detail_scrollview);
         mScrollView.getViewTreeObserver().addOnScrollChangedListener(this);
-        mCardView = (CardView) detailView.findViewById(R.id.card_view);
+        mCardView = (CardView) mDetailView.findViewById(R.id.card_view);
+
+        // Picasso
+        mPicasso = Picasso.with(getActivity().getApplicationContext());
+        mPicasso.setIndicatorsEnabled(true);
+        //mPicasso.setLoggingEnabled(true);
 
         // Setup Loader
         getLoaderManager().initLoader(TMDB_MOVIE_LOADER_ID, null, this);
 
         // Configure initial details.
-        configureView(detailView);
+        configureDetailView(mDetailView);
 
         // Trailer Button.  Initially hidden, and exposed if trailers are available.
-        ImageButton trailerImageButton = (ImageButton) detailView.findViewById(R.id.contentTrailerButton);
+        ImageButton trailerImageButton = (ImageButton) mDetailView.findViewById(R.id.contentTrailerButton);
         trailerImageButton.setVisibility(View.GONE);
         trailerImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -87,7 +94,7 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
         });
 
         // Share Button
-        ImageButton shareImageButton = (ImageButton) detailView.findViewById(R.id.contentShareButton);
+        ImageButton shareImageButton = (ImageButton) mDetailView.findViewById(R.id.contentShareButton);
         shareImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -101,7 +108,7 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
         });
 
         // Favorite Button.
-        ImageButton favoriteImageButton = (ImageButton) detailView.findViewById(R.id.contentFavoriteButton);
+        ImageButton favoriteImageButton = (ImageButton) mDetailView.findViewById(R.id.contentFavoriteButton);
         // Check to see if favorite.
         if (mFavoriteService.isFavorite(mContentItem.getId())) {
             favoriteImageButton.setImageResource(R.drawable.ic_favorite_black_24dp);
@@ -111,7 +118,7 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
         favoriteImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ImageButton favoriteImageButton = (ImageButton) detailView.findViewById(R.id.contentFavoriteButton);
+                ImageButton favoriteImageButton = (ImageButton) mDetailView.findViewById(R.id.contentFavoriteButton);
                 if (mFavoriteService.isFavorite(mContentItem.getId())) {
                     mFavoriteService.removeFavorite(mContentItem);
                     favoriteImageButton.setImageResource(R.drawable.ic_favorite_border_black_24dp);
@@ -124,7 +131,7 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
             }
         });
 
-        return detailView;
+        return mDetailView;
     }
 
     @Override
@@ -140,6 +147,7 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
     ///////////////////////////////////////////////////////////////////////////
 
     private void configureToolbar() {
+        Log.d(LOG_TAG, "configureToolbar");
         int backgroundColor = getResources().getColor(R.color.colorPrimary);
         int textColor = getResources().getColor(R.color.toolbarText);
         // NOTE: we use the cardTop instead of getTop() as we actually set it
@@ -171,53 +179,57 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
         }
     }
 
-    private void configureView(final View detailView) {
-        // Poster
-        String imageURL = String.format("%s%s", TMDBService.getImagesBaseURL(), mContentItem.getPosterPath());
-        ImageView posterImageView = (ImageView) detailView.findViewById(R.id.posterImageView);
-        Picasso.with(getActivity().getApplicationContext()).load(imageURL).into(posterImageView);
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        Log.d(LOG_TAG, "onConfigurationChanged: Configuration changed");
+        //configureDetailView(this.getView());
+    }
 
-        // Backdrop
-        String backdropURL = String.format("%s%s", TMDBService.getBackdropBaseURL(), mContentItem.getBackdropPath());
-        final ImageView backdropImageView = (ImageView) detailView.findViewById(R.id.backdropImageView);
+    private void configureDetailView(final View detailView) {
+
+
         // This little routine is to dynamically resize the backdrop to an appropriate size depending on orientation.
+        // We go get the posters after to avoid any race conditions that happen with the posters.
         // PORTRAIT: Resize to the standard 1.777:1 (i.e. 16:9) and set card offset to 75%.
         // LANDSCAPE: Resize to 65% of the current views height, and set card offset to 50%.
         // The onGlobalLayout() was a tip from SO.
         detailView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-
-                // Remove listener as we only need this to happen once.
-                detailView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-
-                int width = getView().getMeasuredWidth();
+                int width = detailView.getWidth();
                 Log.d(LOG_TAG, "onGlobalLayout: WIDTH:" + width);
                 int backdropImageHeight;
                 LinearLayout.LayoutParams llParams = (LinearLayout.LayoutParams) mCardView.getLayoutParams();
                 if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
                     backdropImageHeight = (int) (width / 1.777);
                     mCardTop = (int) (backdropImageHeight * .75);
-
                 } else {
-                    backdropImageHeight = (int) (getView().getMeasuredHeight() * .65);
+                    backdropImageHeight = (int) (detailView.getMeasuredHeight() * .65);
                     mCardTop = (int) (backdropImageHeight * .50);
                 }
-                llParams.setMargins(30, mCardTop, 30, 0);
                 (detailView.findViewById(R.id.backdropImageView)).setLayoutParams(new RelativeLayout.LayoutParams(width, backdropImageHeight));
+                llParams.setMargins(30, mCardTop, 30, 0);
 
                 configureToolbar();
+
+                // Poster
+                String imageURL = String.format("%s%s", TMDBService.getImagesBaseURL(), mContentItem.getPosterPath());
+                ImageView posterImageView = (ImageView) detailView.findViewById(R.id.posterImageView);
+                mPicasso.load(imageURL).into(posterImageView);
+
+                // Backdrop
+                String backdropURL = String.format("%s%s", TMDBService.getBackdropBaseURL(), mContentItem.getBackdropPath());
+                final ImageView backdropImageView = (ImageView) detailView.findViewById(R.id.backdropImageView);
+                //backdropImageView.setBackgroundColor(Color.RED);
+                mPicasso.load(backdropURL).into(backdropImageView);
+
+                // Remove listener as we only need this to happen once.
+                detailView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+
+
             }
         });
-
-        if (mContentItem.getBackdropPath() != null) {
-            Log.d(LOG_TAG, "configureView: BACKDROP:" + mContentItem.getBackdropPath());
-            Picasso.with(getActivity().getApplicationContext()).load(backdropURL).into(backdropImageView);
-        } else {
-            Log.d(LOG_TAG, "configureView: NO BACKDROP.  Using Poster");
-            Picasso.with(getActivity().getApplicationContext()).load(imageURL).into(backdropImageView);
-        }
-
 
         // Title
         TextView titleTextView = (TextView) detailView.findViewById(R.id.titleTextView);
@@ -228,9 +240,9 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy", Locale.US);
         String subHeadFormat;
         if (mContentItem.getRuntime() > 0) {
-            subHeadFormat = String.format(Locale.getDefault(),"%s %d minutes", simpleDateFormat.format(mContentItem.getReleaseDate()), mContentItem.getRuntime());
+            subHeadFormat = String.format(Locale.getDefault(), "%s %d minutes", simpleDateFormat.format(mContentItem.getReleaseDate()), mContentItem.getRuntime());
         } else {
-            subHeadFormat = String.format(Locale.getDefault(),"%s", simpleDateFormat.format(mContentItem.getReleaseDate()));
+            subHeadFormat = String.format(Locale.getDefault(), "%s", simpleDateFormat.format(mContentItem.getReleaseDate()));
         }
         yearTextView.setText(subHeadFormat);
 
@@ -282,7 +294,7 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
         this.mContentItem = data;
 
         //reconfigure view with updated details.
-        configureView(this.getView());
+        configureDetailView(this.getView());
 
         if (mContentItem.getContentTrailers() != null && mContentItem.getContentTrailers().size() > 0) {
             Log.d(LOG_TAG, "onLoadFinished: TRAILERS:" + mContentItem.getContentTrailers());
