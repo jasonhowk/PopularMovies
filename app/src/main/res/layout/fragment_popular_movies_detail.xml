@@ -71,7 +71,8 @@
                     android:layout_height="wrap_content"
                     android:text="Trailers"
                     style="@style/Base.TextAppearance.AppCompat.Title"
-                    android:paddingLeft="10dp"/>
+                    android:paddingLeft="10dp"
+                    android:paddingBottom="10dp"/>
 
                 <HorizontalScrollView
                     android:id="@+id/trailerScrollView"

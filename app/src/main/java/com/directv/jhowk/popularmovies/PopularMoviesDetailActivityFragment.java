@@ -126,10 +126,6 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
         ViewGroup vg = (ViewGroup) mDetailView.findViewById(R.id.trailerScrollView);
         vg.addView(mTrailerView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-
-        // Configure initial details.
-        configureDetailView(mDetailView);
-
         return mDetailView;
     }
 
@@ -186,8 +182,6 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
     }
 
     private void configureDetailView(final View detailView) {
-
-
         // This little routine is to dynamically resize the backdrop to an appropriate size depending on orientation.
         // We go get the posters after to avoid any race conditions that happen with the posters.
         // PORTRAIT: Resize to the standard 1.777:1 (i.e. 16:9) and set card offset to 75%.
@@ -271,7 +265,7 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
 
         // Trailers.
         Log.d(LOG_TAG, "configureDetailView: TRAILERS: " + mContentItem.getContentTrailers());
-        if (mContentItem.getContentTrailers().size() > 0) {
+        if (mContentItem.getContentTrailers().size() > 0 ) {
             LayoutInflater inflater = (LayoutInflater) getActivity().getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             for (TMDBContentTrailer trailer : mContentItem.getContentTrailers()) {
                 View tmpView = inflater.inflate(R.layout.content_trailer_detail_layout, null);
