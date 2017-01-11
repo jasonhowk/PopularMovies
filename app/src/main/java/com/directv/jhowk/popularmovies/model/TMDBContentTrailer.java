@@ -21,18 +21,18 @@ public class TMDBContentTrailer implements Parcelable {
     private static final String TYPE = "type";
 
     private JSONObject mJSONObject;
-    private String mStringName;
-    private String mStringVideoSize;
-    private String mStringType;
-    private String mStringSource;
+    private String mName;
+    private String mSize;
+    private String mType;
+    private String mSource;
 
     public TMDBContentTrailer(JSONObject jsonObject) {
         mJSONObject = jsonObject;
         try {
-            mStringName = mJSONObject.getString(NAME);
-            mStringVideoSize = mJSONObject.getString(SIZE);
-            mStringSource = mJSONObject.getString(SOURCE);
-            mStringType = mJSONObject.getString(TYPE);
+            mName = mJSONObject.getString(NAME);
+            mSize = mJSONObject.getString(SIZE);
+            mSource = mJSONObject.getString(SOURCE);
+            mType = mJSONObject.getString(TYPE);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -40,43 +40,43 @@ public class TMDBContentTrailer implements Parcelable {
 
     @Override
     public String toString() {
-        return String.format("TMDBContentTrailer[Name:%s,Source:%s]",mStringName,mStringSource);
+        return String.format("TMDBContentTrailer[Name:%s,Source:%s]",mName,mSource);
     }
 
     ///////////////////////////////////////////////////////////////////////////
     // Properties
     ///////////////////////////////////////////////////////////////////////////
 
-    public String getStringName() {
-        return mStringName;
+    public String getName() {
+        return mName;
     }
 
-    public void setStringName(String stringName) {
-        mStringName = stringName;
+    public void setName(String name) {
+        mName = name;
     }
 
-    public String getStringVideoSize() {
-        return mStringVideoSize;
+    public String getSize() {
+        return mSize;
     }
 
-    public void setStringVideoSize(String stringVideoSize) {
-        mStringVideoSize = stringVideoSize;
+    public void setSize(String size) {
+        mSize = size;
     }
 
-    public String getStringType() {
-        return mStringType;
+    public String getType() {
+        return mType;
     }
 
-    public void setStringType(String stringType) {
-        mStringType = stringType;
+    public void setType(String type) {
+        mType = type;
     }
 
-    public String getStringSource() {
-        return mStringSource;
+    public String getSource() {
+        return mSource;
     }
 
-    public void setStringSource(String stringSource) {
-        mStringSource = stringSource;
+    public void setSource(String source) {
+        mSource = source;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -91,10 +91,10 @@ public class TMDBContentTrailer implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(this.mJSONObject.toString());
-        dest.writeString(this.mStringName);
-        dest.writeString(this.mStringVideoSize);
-        dest.writeString(this.mStringType);
-        dest.writeString(this.mStringSource);
+        dest.writeString(this.mName);
+        dest.writeString(this.mSize);
+        dest.writeString(this.mType);
+        dest.writeString(this.mSource);
     }
 
     protected TMDBContentTrailer(Parcel in) {
@@ -104,10 +104,10 @@ public class TMDBContentTrailer implements Parcelable {
             e.printStackTrace();
             this.mJSONObject = null;
         }
-        this.mStringName = in.readString();
-        this.mStringVideoSize = in.readString();
-        this.mStringType = in.readString();
-        this.mStringSource = in.readString();
+        this.mName = in.readString();
+        this.mSize = in.readString();
+        this.mType = in.readString();
+        this.mSource = in.readString();
     }
 
     public static final Parcelable.Creator<TMDBContentTrailer> CREATOR = new Parcelable.Creator<TMDBContentTrailer>() {

@@ -2,6 +2,7 @@ package com.directv.jhowk.popularmovies;
 
 import android.app.Fragment;
 import android.app.LoaderManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
 import android.content.res.Configuration;
@@ -30,6 +31,7 @@ import android.widget.Toast;
 
 import com.directv.jhowk.popularmovies.loader.TMDBMovieLoader;
 import com.directv.jhowk.popularmovies.model.TMDBContentItem;
+import com.directv.jhowk.popularmovies.model.TMDBContentTrailer;
 import com.directv.jhowk.popularmovies.service.FavoriteService;
 import com.directv.jhowk.popularmovies.service.TMDBService;
 import com.squareup.picasso.Picasso;
@@ -52,6 +54,7 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
     private CardView mCardView;
     private View mDetailView;
     private int mCardTop;
+    private View mTrailerView;
     private FavoriteService mFavoriteService;
     private Picasso mPicasso;
 
@@ -79,19 +82,6 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
 
         // Setup Loader
         getLoaderManager().initLoader(TMDB_MOVIE_LOADER_ID, null, this);
-
-        // Configure initial details.
-        configureDetailView(mDetailView);
-
-        // Trailer Button.  Initially hidden, and exposed if trailers are available.
-        ImageButton trailerImageButton = (ImageButton) mDetailView.findViewById(R.id.contentTrailerButton);
-        trailerImageButton.setVisibility(View.GONE);
-        trailerImageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(getActivity().getApplicationContext(), "Trailer clicked.", Toast.LENGTH_SHORT).show();
-            }
-        });
 
         // Share Button
         ImageButton shareImageButton = (ImageButton) mDetailView.findViewById(R.id.contentShareButton);
@@ -131,6 +121,15 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
             }
         });
 
+        // Trailers
+        mTrailerView = inflater.inflate(R.layout.content_trailer_layout, null);
+        ViewGroup vg = (ViewGroup) mDetailView.findViewById(R.id.trailerScrollView);
+        vg.addView(mTrailerView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+
+        // Configure initial details.
+        configureDetailView(mDetailView);
+
         return mDetailView;
     }
 
@@ -147,7 +146,7 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
     ///////////////////////////////////////////////////////////////////////////
 
     private void configureToolbar() {
-        Log.d(LOG_TAG, "configureToolbar");
+        //Log.d(LOG_TAG, "configureToolbar");
         int backgroundColor = getResources().getColor(R.color.colorPrimary);
         int textColor = getResources().getColor(R.color.toolbarText);
         // NOTE: we use the cardTop instead of getTop() as we actually set it
@@ -269,6 +268,34 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
         // Overview
         TextView overviewTextView = (TextView) detailView.findViewById(R.id.overviewTextView);
         overviewTextView.setText(mContentItem.getOverview());
+
+        // Trailers.
+        Log.d(LOG_TAG, "configureDetailView: TRAILERS: " + mContentItem.getContentTrailers());
+        if (mContentItem.getContentTrailers().size() > 0) {
+            LayoutInflater inflater = (LayoutInflater) getActivity().getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            for (TMDBContentTrailer trailer : mContentItem.getContentTrailers()) {
+                View tmpView = inflater.inflate(R.layout.content_trailer_detail_layout, null);
+                // Title
+                TextView title = (TextView) tmpView.findViewById(R.id.trailerTitleTextView);
+                title.setText(trailer.getName());
+                // Play Button
+                ImageButton trailerImageButton = (ImageButton) tmpView.findViewById(R.id.contentTrailerButton);
+                trailerImageButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Toast.makeText(getActivity().getApplicationContext(), "Trailer clicked.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                // Thumbnail
+                ImageView thumbnail = (ImageView) tmpView.findViewById(R.id.trailerThumbnailImageView);
+                String imageURL = String.format("%s%s%s","https://img.youtube.com/vi/",trailer.getSource(),"/sddefault.jpg");
+                Log.d(LOG_TAG, "configureDetailView: URL: " + imageURL);
+                mPicasso.load(imageURL).into(thumbnail);
+
+                ((ViewGroup) mTrailerView).addView(tmpView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            }
+        }
     }
 
 
@@ -295,12 +322,6 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
 
         //reconfigure view with updated details.
         configureDetailView(this.getView());
-
-        if (mContentItem.getContentTrailers() != null && mContentItem.getContentTrailers().size() > 0) {
-            Log.d(LOG_TAG, "onLoadFinished: TRAILERS:" + mContentItem.getContentTrailers());
-            final ImageButton trailerImageButton = (ImageButton) this.getView().findViewById(R.id.contentTrailerButton);
-            trailerImageButton.setVisibility(View.VISIBLE);
-        }
     }
 
     @Override
@@ -315,6 +336,7 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
 
     @Override
     public void onScrollChanged() {
+        //Log.d(LOG_TAG, "onScrollChanged");
         configureToolbar();
     }
 
