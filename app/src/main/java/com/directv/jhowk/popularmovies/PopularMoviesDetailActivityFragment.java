@@ -2,6 +2,7 @@ package com.directv.jhowk.popularmovies;
 
 import android.app.Fragment;
 import android.app.LoaderManager;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
@@ -9,6 +10,7 @@ import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
@@ -77,7 +79,7 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
 
         // Picasso
         mPicasso = Picasso.with(getActivity().getApplicationContext());
-        mPicasso.setIndicatorsEnabled(true);
+        //mPicasso.setIndicatorsEnabled(true);
         //mPicasso.setLoggingEnabled(true);
 
         // Setup Loader
@@ -275,10 +277,18 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
                     title.setText(trailer.getName());
                     // Play Button
                     ImageButton trailerImageButton = (ImageButton) tmpView.findViewById(R.id.contentTrailerButton);
+                    trailerImageButton.setTag(trailer.getSource());
                     trailerImageButton.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             Toast.makeText(getActivity().getApplicationContext(), "Trailer clicked.", Toast.LENGTH_SHORT).show();
+                            Intent appIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + v.getTag()));
+                            Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/watch?v=" + v.getTag()));
+                            try {
+                                startActivity(appIntent);
+                            } catch (ActivityNotFoundException anfe) {
+                                startActivity(webIntent);
+                            }
                         }
                     });
 
