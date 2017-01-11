@@ -268,26 +268,28 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
         if (mContentItem.getContentTrailers().size() > 0 ) {
             LayoutInflater inflater = (LayoutInflater) getActivity().getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             for (TMDBContentTrailer trailer : mContentItem.getContentTrailers()) {
-                View tmpView = inflater.inflate(R.layout.content_trailer_detail_layout, null);
-                // Title
-                TextView title = (TextView) tmpView.findViewById(R.id.trailerTitleTextView);
-                title.setText(trailer.getName());
-                // Play Button
-                ImageButton trailerImageButton = (ImageButton) tmpView.findViewById(R.id.contentTrailerButton);
-                trailerImageButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Toast.makeText(getActivity().getApplicationContext(), "Trailer clicked.", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                if (trailer.getType().equalsIgnoreCase("trailer")) {
+                    View tmpView = inflater.inflate(R.layout.content_trailer_detail_layout, null);
+                    // Title
+                    TextView title = (TextView) tmpView.findViewById(R.id.trailerTitleTextView);
+                    title.setText(trailer.getName());
+                    // Play Button
+                    ImageButton trailerImageButton = (ImageButton) tmpView.findViewById(R.id.contentTrailerButton);
+                    trailerImageButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Toast.makeText(getActivity().getApplicationContext(), "Trailer clicked.", Toast.LENGTH_SHORT).show();
+                        }
+                    });
 
-                // Thumbnail
-                ImageView thumbnail = (ImageView) tmpView.findViewById(R.id.trailerThumbnailImageView);
-                String imageURL = String.format("%s%s%s","https://img.youtube.com/vi/",trailer.getSource(),"/sddefault.jpg");
-                Log.d(LOG_TAG, "configureDetailView: URL: " + imageURL);
-                mPicasso.load(imageURL).into(thumbnail);
+                    // Thumbnail
+                    ImageView thumbnail = (ImageView) tmpView.findViewById(R.id.trailerThumbnailImageView);
+                    String imageURL = String.format("%s%s%s","https://img.youtube.com/vi/",trailer.getSource(),"/sddefault.jpg");
+                    Log.d(LOG_TAG, "configureDetailView: URL: " + imageURL);
+                    mPicasso.load(imageURL).into(thumbnail);
 
-                ((ViewGroup) mTrailerView).addView(tmpView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                    ((ViewGroup) mTrailerView).addView(tmpView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                }
             }
         }
     }
