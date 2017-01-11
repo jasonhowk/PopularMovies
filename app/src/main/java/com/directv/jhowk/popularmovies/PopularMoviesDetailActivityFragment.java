@@ -48,7 +48,8 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
     private static final String LOG_TAG = PopularMoviesDetailActivityFragment.class.getSimpleName();
     private static final int TMDB_MOVIE_LOADER_ID = 2;
     private static final String YOUTUBE_BASE_URL = "https://www.youtube.com/watch?v=";
-    private static final String BUNDLE_CONTENT_ITEM = "bundle_content_item";
+    private static final String YOUTUBE_THUMBNAIL_BASE_URL = "https://img.youtube.com/vi/";
+    private static final String YOUTUBE_THUMBNAIL_PATH = "/sddefault.jpg";
 
     private TMDBContentItem mContentItem;
     private ScrollView mScrollView;
@@ -57,6 +58,7 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
     private View mDetailView;
     private int mCardTop;
     private View mTrailerView;
+    private ImageView mBackdropImageView;
     private FavoriteService mFavoriteService;
     private Picasso mPicasso;
 
@@ -76,6 +78,7 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
         mScrollView = (ScrollView) mDetailView.findViewById(R.id.detail_scrollview);
         mScrollView.getViewTreeObserver().addOnScrollChangedListener(this);
         mCardView = (CardView) mDetailView.findViewById(R.id.card_view);
+        mBackdropImageView = (ImageView) mDetailView.findViewById(R.id.backdropImageView);
 
         // Picasso
         mPicasso = Picasso.with(getActivity().getApplicationContext());
@@ -151,6 +154,8 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
         // in the global layout.
         int threshold = mCardTop - (mToolbar.getBottom() - mToolbar.getTop());
         int pos = mScrollView.getScrollY();
+        // Slow the movement of the backdrop offscreen when scrolling.
+        mBackdropImageView.setY(pos/2);
         // This actually steps the alpha value of the bar color depending on the
         // position of the parent scrollview.
         if (pos >= threshold && threshold > 0) {
@@ -215,9 +220,7 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
 
                 // Backdrop
                 String backdropURL = String.format("%s%s", TMDBService.getBackdropBaseURL(), mContentItem.getBackdropPath());
-                final ImageView backdropImageView = (ImageView) detailView.findViewById(R.id.backdropImageView);
-                //backdropImageView.setBackgroundColor(Color.RED);
-                mPicasso.load(backdropURL).into(backdropImageView);
+                mPicasso.load(backdropURL).into(mBackdropImageView);
 
                 // Remove listener as we only need this to happen once.
                 detailView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
@@ -281,9 +284,9 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
                     trailerImageButton.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            Toast.makeText(getActivity().getApplicationContext(), "Trailer clicked.", Toast.LENGTH_SHORT).show();
                             Intent appIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + v.getTag()));
-                            Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/watch?v=" + v.getTag()));
+
+                            Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(YOUTUBE_BASE_URL + v.getTag()));
                             try {
                                 startActivity(appIntent);
                             } catch (ActivityNotFoundException anfe) {
@@ -294,8 +297,7 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
 
                     // Thumbnail
                     ImageView thumbnail = (ImageView) tmpView.findViewById(R.id.trailerThumbnailImageView);
-                    String imageURL = String.format("%s%s%s","https://img.youtube.com/vi/",trailer.getSource(),"/sddefault.jpg");
-                    Log.d(LOG_TAG, "configureDetailView: URL: " + imageURL);
+                    String imageURL = String.format("%s%s%s",YOUTUBE_THUMBNAIL_BASE_URL,trailer.getSource(),YOUTUBE_THUMBNAIL_PATH);
                     mPicasso.load(imageURL).into(thumbnail);
 
                     ((ViewGroup) mTrailerView).addView(tmpView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
