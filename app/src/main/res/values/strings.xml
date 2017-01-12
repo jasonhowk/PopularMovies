@@ -3,10 +3,14 @@
     <string name="action_settings">Settings</string>
     <string name="title_activity_popular_movies_detail">MovieDetail</string>
     <string name="shareTitle">Share "%1$s" via</string>
+    <string name="reviewAuthor">By %1$s</string>
+    <string name="emptyReview">We don\'t have any reviews for %1$s.</string>
     <!-- Accessiblity -->
     <string name="program_poster">Program poster</string>
     <string name="favorite_button">Favorite button</string>
     <string name="content_backdrop_image">Content backdrop image</string>
     <string name="trailer_button">Play trailer button</string>
     <string name="share_button">Share button</string>
+    <string name="trailers">Trailers</string>
+    <string name="reviews">Reviews</string>
 </resources>

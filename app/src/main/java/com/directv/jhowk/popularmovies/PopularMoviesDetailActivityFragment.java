@@ -33,6 +33,7 @@ import android.widget.Toast;
 
 import com.directv.jhowk.popularmovies.loader.TMDBMovieLoader;
 import com.directv.jhowk.popularmovies.model.TMDBContentItem;
+import com.directv.jhowk.popularmovies.model.TMDBContentReview;
 import com.directv.jhowk.popularmovies.model.TMDBContentTrailer;
 import com.directv.jhowk.popularmovies.service.FavoriteService;
 import com.directv.jhowk.popularmovies.service.TMDBService;
@@ -58,6 +59,7 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
     private View mDetailView;
     private int mCardTop;
     private View mTrailerView;
+    private View mReviewView;
     private ImageView mBackdropImageView;
     private FavoriteService mFavoriteService;
     private Picasso mPicasso;
@@ -127,9 +129,10 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
         });
 
         // Trailers
-        mTrailerView = inflater.inflate(R.layout.content_trailer_layout, null);
-        ViewGroup vg = (ViewGroup) mDetailView.findViewById(R.id.trailerScrollView);
-        vg.addView(mTrailerView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        mTrailerView = mDetailView.findViewById(R.id.trailerDetailLayout);
+
+        // Reviews
+        mReviewView = mDetailView.findViewById(R.id.reviewDetailLayout);
 
         return mDetailView;
     }
@@ -155,7 +158,7 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
         int threshold = mCardTop - (mToolbar.getBottom() - mToolbar.getTop());
         int pos = mScrollView.getScrollY();
         // Slow the movement of the backdrop offscreen when scrolling.
-        mBackdropImageView.setY(pos/2);
+        mBackdropImageView.setY(pos / 2);
         // This actually steps the alpha value of the bar color depending on the
         // position of the parent scrollview.
         if (pos >= threshold && threshold > 0) {
@@ -189,6 +192,8 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
     }
 
     private void configureDetailView(final View detailView) {
+        LayoutInflater inflater = (LayoutInflater) getActivity().getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
         // This little routine is to dynamically resize the backdrop to an appropriate size depending on orientation.
         // We go get the posters after to avoid any race conditions that happen with the posters.
         // PORTRAIT: Resize to the standard 1.777:1 (i.e. 16:9) and set card offset to 75%.
@@ -270,8 +275,7 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
 
         // Trailers.
         Log.d(LOG_TAG, "configureDetailView: TRAILERS: " + mContentItem.getContentTrailers());
-        if (mContentItem.getContentTrailers().size() > 0 ) {
-            LayoutInflater inflater = (LayoutInflater) getActivity().getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        if (mContentItem.getContentTrailers().size() > 0) {
             for (TMDBContentTrailer trailer : mContentItem.getContentTrailers()) {
                 if (trailer.getType().equalsIgnoreCase("trailer")) {
                     View tmpView = inflater.inflate(R.layout.content_trailer_detail_layout, null);
@@ -285,11 +289,11 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
                         @Override
                         public void onClick(View v) {
                             Intent appIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + v.getTag()));
-
                             Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(YOUTUBE_BASE_URL + v.getTag()));
                             try {
                                 startActivity(appIntent);
                             } catch (ActivityNotFoundException anfe) {
+                                // No youtube app.  Use web instead.
                                 startActivity(webIntent);
                             }
                         }
@@ -297,12 +301,32 @@ public class PopularMoviesDetailActivityFragment extends Fragment implements Loa
 
                     // Thumbnail
                     ImageView thumbnail = (ImageView) tmpView.findViewById(R.id.trailerThumbnailImageView);
-                    String imageURL = String.format("%s%s%s",YOUTUBE_THUMBNAIL_BASE_URL,trailer.getSource(),YOUTUBE_THUMBNAIL_PATH);
+                    String imageURL = String.format("%s%s%s", YOUTUBE_THUMBNAIL_BASE_URL, trailer.getSource(), YOUTUBE_THUMBNAIL_PATH);
                     mPicasso.load(imageURL).into(thumbnail);
 
                     ((ViewGroup) mTrailerView).addView(tmpView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
                 }
             }
+        }
+
+        // Reviews.
+        Log.d(LOG_TAG, "configureDetailView: REVIEWS: " + mContentItem.getContentReviews());
+        if (mContentItem.getContentReviews().size() > 0) {
+            for (TMDBContentReview review : mContentItem.getContentReviews()) {
+                View tmpView = inflater.inflate(R.layout.content_review_detail_layout, null);
+                // Author
+                TextView authorTextView = (TextView) tmpView.findViewById(R.id.reviewDetailAuthor);
+                authorTextView.setText(getResources().getString(R.string.reviewAuthor,review.getAuthor()));
+                // Review Content
+                TextView reviewTextView = (TextView) tmpView.findViewById(R.id.reviewDetailContent);
+                reviewTextView.setText(review.getContent());
+
+                ((ViewGroup) mReviewView).addView(tmpView,0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            }
+        } else {
+            TextView placeholder = new TextView(getActivity().getApplicationContext());
+            placeholder.setText(getResources().getString(R.string.emptyReview,mContentItem.getTitle()));
+            ((ViewGroup)mReviewView).addView(placeholder,0,new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         }
     }
 

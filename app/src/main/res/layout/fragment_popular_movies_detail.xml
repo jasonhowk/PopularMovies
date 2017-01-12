@@ -18,7 +18,7 @@
         <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                         xmlns:tools="http://schemas.android.com/tools"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent">
+                        android:layout_height="wrap_content">
 
             <RelativeLayout
                 android:layout_width="wrap_content"
@@ -38,6 +38,7 @@
                           xmlns:android="http://schemas.android.com/apk/res/android"
                           android:layout_width="match_parent"
                           android:layout_height="wrap_content"
+                          android:layout_marginBottom="10dp"
                           android:background="@android:color/transparent"
                           android:orientation="vertical">
 
@@ -59,45 +60,65 @@
 
             <LinearLayout
                 android:id="@+id/trailerLayout"
-                android:layout_below="@id/card_linear_layout"
-                android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp">
+                android:layout_below="@id/card_linear_layout"
+                android:layout_marginBottom="10dp"
+                android:layout_marginTop="10dp"
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/trailerTitle"
+                    style="@style/Base.TextAppearance.AppCompat.Title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Trailers"
-                    style="@style/Base.TextAppearance.AppCompat.Title"
+                    android:paddingBottom="10dp"
                     android:paddingLeft="10dp"
-                    android:paddingBottom="10dp"/>
+                    android:paddingRight="10dp"
+                    android:text="@string/trailers"/>
 
                 <HorizontalScrollView
                     android:id="@+id/trailerScrollView"
-                    android:layout_below="@id/trailerTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content">
+
+                    <LinearLayout android:id="@+id/trailerDetailLayout"
+                                  xmlns:android="http://schemas.android.com/apk/res/android"
+                                  android:layout_width="wrap_content"
+                                  android:layout_height="wrap_content"
+                                  android:orientation="horizontal">
+                    </LinearLayout>
+
                 </HorizontalScrollView>
 
             </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/reviewLayout"
-                android:layout_below="@id/trailerLayout"
-                android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp">
+                android:layout_below="@id/trailerLayout"
+                android:layout_marginBottom="10dp"
+                android:layout_marginTop="10dp"
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/reviewTitle"
+                    style="@style/Base.TextAppearance.AppCompat.Title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Reviews"
-                    style="@style/Base.TextAppearance.AppCompat.Title"
-                    android:paddingLeft="10dp"/>
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:text="@string/reviews"/>
+
+                <LinearLayout
+                    android:id="@+id/reviewDetailLayout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_margin="10dp">
+                </LinearLayout>
+
             </LinearLayout>
 
         </RelativeLayout>
