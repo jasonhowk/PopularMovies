@@ -1,12 +1,10 @@
 package com.directv.jhowk.popularmovies;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.app.LoaderManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
-import android.content.SharedPreferences;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -36,7 +34,7 @@ import java.util.ArrayList;
 public class PopularMoviesActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<ArrayList<TMDBContentItem>>, AdapterView.OnItemSelectedListener {
     private static final String LOG_TAG = PopularMoviesActivityFragment.class.getSimpleName();
     public static final String EXTRA_CONTENT_ITEM = "com.directv.jhowk.popularMovies.model.TMDBContentItem";
-    private static final String PREFERENCE_SECTION_POSITION = "com.directv.jhowk.popularMovies.preference.section.position";
+    private static final String SAVED_SECTION_POSITION = "com.directv.jhowk.popularMovies.preference.section.position";
     private static final int TMDB_SECTION_LOADER_ID = 1;
 
     private SwipeRefreshLayout mSwipeRefreshLayout;
@@ -44,17 +42,15 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
     private TypedArray mSectionsArray;
     private ArrayList<TMDBContentItem> mContentItems;
     private TMDBImageAdapter mImageAdapter;
-    private SharedPreferences mPreferences;
     private View mPlaceholderView;
 
     private @StringRes int mSelectedSectionId;
+    private int mSelectedSection;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(LOG_TAG, "onCreate: Creating fragment.");
-        // Preferences preferences.
-        mPreferences = getActivity().getPreferences(Activity.MODE_PRIVATE);
     }
 
     @Override
@@ -82,12 +78,14 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
         spinner.setAdapter(arrayAdapter);
         spinner.setOnItemSelectedListener(this);
 
-        // Load last menu selection from preferences.
-        Log.d(LOG_TAG, "onActivityCreated: Loading preferences...");
-        int position = mPreferences.getInt(PREFERENCE_SECTION_POSITION, -1);
-        if (position >= 0) {
-            Log.d(LOG_TAG, "onActivityCreated: Setting spinner selection based on preferences.");
-            spinner.setSelection(position);
+        // Load last menu selection from saved state.
+        Log.d(LOG_TAG, "onActivityCreated: Loading saved state...");
+        if (savedInstanceState != null) {
+            mSelectedSection = savedInstanceState.getInt(SAVED_SECTION_POSITION, -1);
+            if (mSelectedSection >= 0) {
+                Log.d(LOG_TAG, "onActivityCreated: Setting spinner selection based on saved state.");
+                spinner.setSelection(mSelectedSection);
+            }
         }
     }
 
@@ -110,7 +108,11 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
         }
     }
 
-
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(SAVED_SECTION_POSITION, mSelectedSection);
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     // LoaderManager.LoaderCallbacks
@@ -165,10 +167,7 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
         restartLoader();
 
         // Save selection to preferences.
-        Log.d(LOG_TAG, "onItemSelected: setting preference.");
-        SharedPreferences.Editor editor = mPreferences.edit();
-        editor.putInt(PREFERENCE_SECTION_POSITION, position);
-        editor.apply();
+        mSelectedSection = position;
     }
 
     @Override
@@ -255,7 +254,7 @@ public class PopularMoviesActivityFragment extends Fragment implements LoaderMan
                         (Context.LAYOUT_INFLATER_SERVICE);
                 ViewGroup tmpParent = (ViewGroup) getView().findViewById(R.id.fragment).getParent();
                 mPlaceholderView = inflater.inflate(R.layout.no_content, tmpParent, false);
-                tmpParent.addView(mPlaceholderView,tmpParent.indexOfChild(mGridView));
+                tmpParent.addView(mPlaceholderView, tmpParent.indexOfChild(mGridView));
             } else {
                 mPlaceholderView.setVisibility(View.VISIBLE);
             }
